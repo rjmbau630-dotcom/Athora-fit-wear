@@ -48,7 +48,7 @@ except ImportError:
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET
 
-DB = "athora.db"
+DB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "athora.db")
 
 # ══════════════════════════════════════════════════════════
 #  DATABASE
@@ -310,17 +310,22 @@ def mpesa_callback():
 #  SERVE FRONTEND
 # ══════════════════════════════════════════════════════════
 
+# ══ INIT DB ON STARTUP (works with gunicorn AND python directly) ══
+init_db()
+
+# ══ EMBEDDED FRONTEND ══
+_INDEX = os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html")
+_HTML = open(_INDEX).read() if os.path.exists(_INDEX) else "<h1>index.html not found</h1>"
+
 @app.route("/")
 def index():
-    with open("index.html", "r") as f:
-        return Response(f.read(), mimetype="text/html")
+    return Response(_HTML, mimetype="text/html")
 
 # ══════════════════════════════════════════════════════════
 #  START
 # ══════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
-    init_db()
     port = int(os.environ.get("PORT", 5000))
     print(f"""
 ╔══════════════════════════════════════════════════════════╗
