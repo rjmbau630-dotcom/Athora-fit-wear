@@ -50,7 +50,11 @@ app.secret_key = FLASK_SECRET
 # ══════════════════════════════════════════════════════════
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
-
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is missing!")
+if "sslmode"not in DATABASE_URL:
+    DATABASE_URL +="?sslmode=require"
+    
 def get_conn():
     return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
 
