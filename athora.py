@@ -145,14 +145,18 @@ def admin_check():
     """Check if user is authenticated (for session persistence)"""
     return jsonify({"authenticated": session.get("admin", False)})
 
-# ════════════════════════════════════════════════════��═════
+# ══════════════════════════════════════════════════════════
 #  PRODUCTS
 # ══════════════════════════════════════════════════════════
 
 @app.route("/api/products")
 def api_products():
-    products = db_all("SELECT id, name, category, description, price, sizes, out_of_stock, image_b64, created_at FROM products ORDER BY id DESC")
-    return jsonify(products)
+    try:
+        products = db_all("SELECT id, name, category, description, price, sizes, out_of_stock, image_b64, created_at FROM products ORDER BY id DESC")
+        return jsonify(products)
+    except Exception as e:
+        print(f"[DB ERROR] {e}")
+        return jsonify([])
 
 @app.route("/api/products", methods=["POST"])
 @admin_required
@@ -249,7 +253,7 @@ def api_orders():
         return jsonify(orders)
     except Exception as e:
         print(f"[DB ERROR] {e}")
-        return jsonify({"error": "database error"}), 500
+        return jsonify([])
 
 @app.route("/api/orders/<ref>/status", methods=["POST"])
 @admin_required
