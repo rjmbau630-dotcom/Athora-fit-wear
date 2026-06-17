@@ -131,6 +131,7 @@ def admin_required(f):
 def admin_login():
     if (request.get_json() or {}).get("pin") == ADMIN_PIN:
         session["admin"] = True
+        session.permanent = True
         return jsonify({"success": True})
     return jsonify({"success": False}), 401
 
@@ -139,41 +140,72 @@ def admin_logout():
     session.pop("admin", None)
     return jsonify({"success": True})
 
-# ══════════════════════════════════════════════════════════
+@app.route("/admin/check", methods=["GET"])
+def admin_check():
+    """Check if user is authenticated (for session persistence)"""
+    return jsonify({"authenticated": session.get("admin", False)})
+
+# ════════════════════════════════════════════════════��═════
 #  PRODUCTS
 # ══════════════════════════════════════════════════════════
 
 @app.route("/api/products")
 def api_products():
-    return jsonify(db_all("SELECT * FROM products ORDER BY id DESC"))
+    products = db_all("SELECT id, name, category, description, price, sizes, out_of_stock, image_b64, created_at FROM products ORDER BY id DESC")
+    return jsonify(products)
 
 @app.route("/api/products", methods=["POST"])
 @admin_required
 def api_add_product():
     d = request.get_json() or {}
-    if not d.get("name") or not d.get("price"):
+    if not d.get("name") or d.get("price") is None:
         return jsonify({"error": "name and price required"}), 400
-    pid = db_run(
-        "INSERT INTO products(name,category,description,price,sizes,image_b64) VALUES(%s,%s,%s,%s,%s,%s) RETURNING id",
-        (d["name"].strip(), d.get("category","General"), d.get("description",""),
-         float(d["price"]), d.get("sizes","One Size"), d.get("image_b64"))
-    )
-    return jsonify({"success": True, "id": pid}), 201
+    
+    try:
+        price = float(d["price"])
+        if price < 0:
+            return jsonify({"error": "price must be positive"}), 400
+    except (ValueError, TypeError):
+        return jsonify({"error": "invalid price"}), 400
+    
+    # Compress image if it exists
+    image_data = d.get("image_b64")
+    if image_data and len(image_data) > 5000000:  # Limit to 5MB
+        return jsonify({"error": "image too large (max 5MB)"}), 400
+    
+    try:
+        pid = db_run(
+            "INSERT INTO products(name,category,description,price,sizes,image_b64) VALUES(%s,%s,%s,%s,%s,%s) RETURNING id",
+            (d["name"].strip(), d.get("category","General"), d.get("description","").strip(),
+             price, d.get("sizes","One Size").strip(), image_data)
+        )
+        return jsonify({"success": True, "id": pid}), 201
+    except Exception as e:
+        print(f"[DB ERROR] {e}")
+        return jsonify({"error": "database error"}), 500
 
 @app.route("/api/products/<int:pid>", methods=["DELETE"])
 @admin_required
 def api_delete_product(pid):
-    db_run("DELETE FROM products WHERE id=%s", (pid,))
-    return jsonify({"success": True})
+    try:
+        db_run("DELETE FROM products WHERE id=%s", (pid,))
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"[DB ERROR] {e}")
+        return jsonify({"error": "database error"}), 500
 
 @app.route("/api/products/<int:pid>/stock", methods=["POST"])
 @admin_required
 def api_toggle_stock(pid):
-    p = db_one("SELECT out_of_stock FROM products WHERE id=%s", (pid,))
-    if not p: return jsonify({"error": "Not found"}), 404
-    new_val = 0 if p["out_of_stock"] else 1
-    db_run("UPDATE products SET out_of_stock=%s WHERE id=%s", (new_val, pid))
-    return jsonify({"success": True, "out_of_stock": new_val})
+    try:
+        p = db_one("SELECT out_of_stock FROM products WHERE id=%s", (pid,))
+        if not p: return jsonify({"error": "Not found"}), 404
+        new_val = 0 if p["out_of_stock"] else 1
+        db_run("UPDATE products SET out_of_stock=%s WHERE id=%s", (new_val, pid))
+        return jsonify({"success": True, "out_of_stock": new_val})
+    except Exception as e:
+        print(f"[DB ERROR] {e}")
+        return jsonify({"error": "database error"}), 500
 
 # ══════════════════════════════════════════════════════════
 #  ORDERS
@@ -198,17 +230,26 @@ def api_checkout():
             "category": p["category"]
         })
     ref = make_ref()
-    db_run(
-        "INSERT INTO orders(ref,customer_name,customer_phone,customer_address,items_json,total,mpesa_code) VALUES(%s,%s,%s,%s,%s,%s,%s)",
-        (ref, d["name"].strip(), d["phone"].strip(), d["address"].strip(),
-         json.dumps(items), total, d["mpesa_code"].strip())
-    )
-    return jsonify({"success": True, "ref": ref, "total": total})
+    try:
+        db_run(
+            "INSERT INTO orders(ref,customer_name,customer_phone,customer_address,items_json,total,mpesa_code) VALUES(%s,%s,%s,%s,%s,%s,%s)",
+            (ref, d["name"].strip(), d["phone"].strip(), d["address"].strip(),
+             json.dumps(items), total, d["mpesa_code"].strip())
+        )
+        return jsonify({"success": True, "ref": ref, "total": total})
+    except Exception as e:
+        print(f"[DB ERROR] {e}")
+        return jsonify({"error": "database error"}), 500
 
 @app.route("/api/orders")
 @admin_required
 def api_orders():
-    return jsonify(db_all("SELECT * FROM orders ORDER BY id DESC"))
+    try:
+        orders = db_all("SELECT * FROM orders ORDER BY id DESC")
+        return jsonify(orders)
+    except Exception as e:
+        print(f"[DB ERROR] {e}")
+        return jsonify({"error": "database error"}), 500
 
 @app.route("/api/orders/<ref>/status", methods=["POST"])
 @admin_required
@@ -217,14 +258,22 @@ def api_update_status(ref):
     status = d.get("status")
     if status not in ["pending", "paid", "packed", "delivered"]:
         return jsonify({"error": "Invalid status"}), 400
-    db_run("UPDATE orders SET status=%s WHERE ref=%s", (status, ref))
-    return jsonify({"success": True})
+    try:
+        db_run("UPDATE orders SET status=%s WHERE ref=%s", (status, ref))
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"[DB ERROR] {e}")
+        return jsonify({"error": "database error"}), 500
 
 @app.route("/api/stats")
 def api_stats():
-    products = db_one("SELECT COUNT(*) as c FROM products")["c"]
-    orders   = db_one("SELECT COUNT(*) as c FROM orders")["c"]
-    return jsonify({"products": products, "orders": orders})
+    try:
+        products = db_one("SELECT COUNT(*) as c FROM products")["c"]
+        orders   = db_one("SELECT COUNT(*) as c FROM orders")["c"]
+        return jsonify({"products": products, "orders": orders})
+    except Exception as e:
+        print(f"[DB ERROR] {e}")
+        return jsonify({"products": 0, "orders": 0})
 
 # ══════════════════════════════════════════════════════════
 #  M-PESA CALLBACK
@@ -279,6 +328,11 @@ else:
     print("[DB] ⚠️  DATABASE_URL not set — add it in Render environment variables")
 
 if __name__ == "__main__":
+    app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['PERMANENT_SESSION_LIFETIME'] = 86400 * 7  # 7 days
+    
     port = int(os.environ.get("PORT", 5000))
     print(f"[APP] Starting on http://localhost:{port}")
     app.run(host="0.0.0.0", port=port, debug=False)
