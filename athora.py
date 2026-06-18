@@ -113,7 +113,35 @@ try:
     import requests as req_lib
 except ImportError:
     raise SystemExit("Run: pip install requests")
+app.post('/api/mpesa/callback', (req, res) => {
+  const { Body } = req.body;
+  const result = Body.stkCallback;
 
+  if (result.ResultCode === 0) {
+    // Payment successful
+    const orderId = result.CheckoutRequestID;
+    // Update order status in Supabase
+    supabase
+      .from('orders')
+      .update({ status: 'processing' })
+      .eq('id', orderId);
+
+    // Update M-Pesa transaction
+    const metadata = result.CallbackMetadata?.ItemList || [];
+    const mpesaRef = metadata.find(i => i.Name === 'MpesaReceiptNumber')?.Value;
+    
+    supabase
+      .from('mpesa_transactions')
+      .update({ 
+        status: 'completed', 
+        transaction_id: mpesaRef,
+        mpesa_response: result 
+      })
+      .eq('order_id', orderId);
+  }
+
+  res.json({ resultCode: 0, resultDesc: 'Callback processed' });
+});
 # ══════════════════════════════════════════════════════════
 #  APP
 # ══════════════════════════════════════════════════════════
