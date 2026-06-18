@@ -125,7 +125,63 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "")
 # ══════════════════════════════════════════════════════════
 #  DATABASE
 # ══════════════════════════════════════════════════════════
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
+export function useAuth() {
+  const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user);
+        // Check if admin
+        checkAdmin(session.user.id);
+      }
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+          checkAdmin(session.user.id);
+        } else {
+          setUser(null);
+          setIsAdmin(false);
+        }
+      }
+    );
+
+    return () => subscription?.unsubscribe();
+  }, []);
+
+  async function checkAdmin(userId) {
+    const { data } = await supabase
+      .from('auth_users')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+    setIsAdmin(data?.is_admin || false);
+  }
+
+  async function signIn(email, password) {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return error;
+  }
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    setUser(null);
+    setIsAdmin(false);
+  }
+
+  return { user, isAdmin, loading, signIn, signOut };
+}
 def get_conn():
     return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
 
