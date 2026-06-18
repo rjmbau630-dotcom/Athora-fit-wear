@@ -19,7 +19,86 @@ MPESA_ENV             = "sandbox"
 # ══════════════════════════════════════════════════════════
 #  IMPORTS
 # ══════════════════════════════════════════════════════════
+import { supabase } from './supabase';
 
+const MPESA_API_URL = 'https://sandbox.safaricom.co.ke'; // Change to production URL
+const CONSUMER_KEY = process.env.REACT_APP_MPESA_CONSUMER_KEY;
+const CONSUMER_SECRET = process.env.REACT_APP_MPESA_CONSUMER_SECRET;
+const BUSINESS_SHORTCODE = process.env.REACT_APP_MPESA_BUSINESS_SHORTCODE;
+const PASSKEY = process.env.REACT_APP_MPESA_PASSKEY;
+
+// Get access token
+async function getMpesaAccessToken() {
+  const auth = Buffer.from(`${CONSUMER_KEY}:${CONSUMER_SECRET}`).toString('base64');
+  
+  const response = await fetch(`${MPESA_API_URL}/oauth/v1/generate?grant_type=client_credentials`, {
+    headers: { Authorization: `Basic ${auth}` }
+  });
+
+  const data = await response.json();
+  return data.access_token;
+}
+
+// STK Push
+export async function initiateMpesaPayment(orderId, phone, amount) {
+  try {
+    const token = await getMpesaAccessToken();
+    
+    // Format phone number (remove + if present)
+    const phoneNumber = phone.replace(/\D/g, '').slice(-10);
+    const formattedPhone = '254' + phoneNumber.slice(-9);
+
+    // Timestamp
+    const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);
+
+    // Password: BusinessShortCode + Passkey + Timestamp (base64)
+    const password = Buffer.from(
+      `${BUSINESS_SHORTCODE}${PASSKEY}${timestamp}`
+    ).toString('base64');
+
+    const payload = {
+      BusinessShortCode: BUSINESS_SHORTCODE,
+      Password: password,
+      Timestamp: timestamp,
+      TransactionType: 'CustomerPayBillOnline',
+      Amount: Math.ceil(amount),
+      PartyA: formattedPhone,
+      PartyB: BUSINESS_SHORTCODE,
+      PhoneNumber: formattedPhone,
+      CallBackURL: `${process.env.REACT_APP_API_URL}/api/mpesa/callback`,
+      AccountReference: orderId,
+      TransactionDesc: `Payment for Order ${orderId}`
+    };
+
+    const response = await fetch(
+      `${MPESA_API_URL}/mpesa/stkpush/v1/processrequest`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const data = await response.json();
+
+    // Save transaction
+    await supabase.from('mpesa_transactions').insert([{
+      order_id: orderId,
+      phone_number: formattedPhone,
+      amount: amount,
+      status: 'pending',
+      mpesa_response: data
+    }]);
+
+    return { success: data.ResponseCode === '0', data };
+  } catch (error) {
+    console.error('M-Pesa error:', error);
+    return { success: false, error };
+  }
+}
 import os, json, base64, secrets
 from datetime import datetime
 from flask import Flask, request, session, jsonify, Response
