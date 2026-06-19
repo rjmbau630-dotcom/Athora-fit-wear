@@ -1,0 +1,195 @@
+{
+  "store": {
+    "name": "ATHORA FIT WEAR",
+    "tagline": "Performance gym wear built for those who don't quit. Train hard, look harder.",
+    "mpesa_paybill": "522533",
+    "mpesa_account": "ATHORA",
+    "whatsapp": "+254700000000",
+    "currency": "KES",
+    "free_delivery_threshold": 5000
+  },
+
+  "categories": [
+    "All",
+    "Tops",
+    "Bottoms",
+    "Shorts",
+    "Hoodies",
+    "Accessories"
+  ],
+
+  "products": [
+    {
+      "id": 1,
+      "name": "APEX COMPRESSION TEE",
+      "category": "Tops",
+      "description": "Moisture-wicking compression fit tee engineered for high-intensity training. Four-way stretch fabric moves with you.",
+      "price": 1800,
+      "sizes": "S, M, L, XL, XXL",
+      "out_of_stock": 0,
+      "image_b64": null,
+      "created_at": "2025-01-01T08:00:00"
+    },
+    {
+      "id": 2,
+      "name": "FORGE MUSCLE TEE",
+      "category": "Tops",
+      "description": "Dropped armhole muscle tee. Lightweight, breathable, built for the rack.",
+      "price": 1500,
+      "sizes": "S, M, L, XL",
+      "out_of_stock": 0,
+      "image_b64": null,
+      "created_at": "2025-01-02T08:00:00"
+    },
+    {
+      "id": 3,
+      "name": "STEALTH JOGGERS",
+      "category": "Bottoms",
+      "description": "Tapered slim-fit joggers with deep side pockets and elastic waistband. Gym to street ready.",
+      "price": 2800,
+      "sizes": "S, M, L, XL, XXL",
+      "out_of_stock": 0,
+      "image_b64": null,
+      "created_at": "2025-01-03T08:00:00"
+    },
+    {
+      "id": 4,
+      "name": "IRON FLEX SHORTS",
+      "category": "Shorts",
+      "description": "5-inch inseam training shorts with built-in liner. Maximum range of motion for squats, lunges, and more.",
+      "price": 1600,
+      "sizes": "S, M, L, XL",
+      "out_of_stock": 0,
+      "image_b64": null,
+      "created_at": "2025-01-04T08:00:00"
+    },
+    {
+      "id": 5,
+      "name": "BLACKOUT HOODIE",
+      "category": "Hoodies",
+      "description": "Heavyweight French terry hoodie with kangaroo pocket. Oversized fit, minimal branding, maximum comfort.",
+      "price": 3500,
+      "sizes": "S, M, L, XL, XXL",
+      "out_of_stock": 0,
+      "image_b64": null,
+      "created_at": "2025-01-05T08:00:00"
+    },
+    {
+      "id": 6,
+      "name": "SIGNAL SNAPBACK",
+      "category": "Accessories",
+      "description": "Structured 6-panel snapback with embroidered ATHORA wordmark. One size fits all.",
+      "price": 1200,
+      "sizes": "One Size",
+      "out_of_stock": 0,
+      "image_b64": null,
+      "created_at": "2025-01-06T08:00:00"
+    },
+    {
+      "id": 7,
+      "name": "VELOCITY TRACK PANTS",
+      "category": "Bottoms",
+      "description": "Side-stripe track pants with zip ankle closure. Lightweight and fast-drying for cardio days.",
+      "price": 2500,
+      "sizes": "S, M, L, XL",
+      "out_of_stock": 0,
+      "image_b64": null,
+      "created_at": "2025-01-07T08:00:00"
+    },
+    {
+      "id": 8,
+      "name": "GRIND WRIST WRAPS",
+      "category": "Accessories",
+      "description": "18-inch heavy-duty wrist wraps with thumb loop. Extra support for heavy press days.",
+      "price": 900,
+      "sizes": "One Size",
+      "out_of_stock": 1,
+      "image_b64": null,
+      "created_at": "2025-01-08T08:00:00"
+    }
+  ],
+
+  "orders": [
+    {
+      "id": 1,
+      "ref": "ATH-X7KP2Q",
+      "customer_name": "Brian Otieno",
+      "customer_phone": "0712345678",
+      "customer_address": "Westlands, Nairobi",
+      "items_json": [
+        { "id": 1, "name": "APEX COMPRESSION TEE", "price": 1800, "size": "L", "category": "Tops" },
+        { "id": 4, "name": "IRON FLEX SHORTS", "price": 1600, "size": "L", "category": "Shorts" }
+      ],
+      "total": 3400,
+      "status": "paid",
+      "mpesa_code": "RGH4521KLM",
+      "mpesa_receipt": "",
+      "created_at": "2025-06-10T14:22:00",
+      "paid_at": "2025-06-10T14:25:00"
+    },
+    {
+      "id": 2,
+      "ref": "ATH-MN8RVW",
+      "customer_name": "Amina Wanjiru",
+      "customer_phone": "0723456789",
+      "customer_address": "Kilimani, Nairobi",
+      "items_json": [
+        { "id": 5, "name": "BLACKOUT HOODIE", "price": 3500, "size": "M", "category": "Hoodies" }
+      ],
+      "total": 3500,
+      "status": "packed",
+      "mpesa_code": "QKJ7834NOP",
+      "mpesa_receipt": "",
+      "created_at": "2025-06-11T09:05:00",
+      "paid_at": "2025-06-11T09:08:00"
+    },
+    {
+      "id": 3,
+      "ref": "ATH-TZ2LB4",
+      "customer_name": "Kevin Mwangi",
+      "customer_phone": "0734567890",
+      "customer_address": "Kasarani, Nairobi",
+      "items_json": [
+        { "id": 3, "name": "STEALTH JOGGERS", "price": 2800, "size": "XL", "category": "Bottoms" },
+        { "id": 6, "name": "SIGNAL SNAPBACK", "price": 1200, "size": "One Size", "category": "Accessories" }
+      ],
+      "total": 4000,
+      "status": "pending",
+      "mpesa_code": "WXP1122ABZ",
+      "mpesa_receipt": "",
+      "created_at": "2025-06-12T16:40:00",
+      "paid_at": null
+    },
+    {
+      "id": 4,
+      "ref": "ATH-DH9YFC",
+      "customer_name": "Faith Njeri",
+      "customer_phone": "0745678901",
+      "customer_address": "Lavington, Nairobi",
+      "items_json": [
+        { "id": 2, "name": "FORGE MUSCLE TEE", "price": 1500, "size": "S", "category": "Tops" },
+        { "id": 7, "name": "VELOCITY TRACK PANTS", "price": 2500, "size": "S", "category": "Bottoms" }
+      ],
+      "total": 4000,
+      "status": "delivered",
+      "mpesa_code": "LMN9900XYZ",
+      "mpesa_receipt": "",
+      "created_at": "2025-06-08T11:15:00",
+      "paid_at": "2025-06-08T11:18:00"
+    }
+  ],
+
+  "order_statuses": ["pending", "paid", "packed", "delivered"],
+
+  "stats": {
+    "total_products": 8,
+    "in_stock": 7,
+    "out_of_stock": 1,
+    "total_orders": 4,
+    "pending_orders": 1,
+    "paid_orders": 1,
+    "packed_orders": 1,
+    "delivered_orders": 1,
+    "total_revenue_kes": 14900
+  }
+}
