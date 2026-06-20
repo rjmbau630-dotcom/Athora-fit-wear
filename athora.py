@@ -150,7 +150,7 @@ def toggle_stock(pid):
         return jsonify({"error": str(e)}), 500
 
 # ── ORDERS ───────────────────────────────────────────────
-c@app.route("/api/checkout", methods=["POST"])
+@app.route("/api/checkout", methods=["POST"])
 def checkout():
     d = request.get_json() or {}
     mpesa_code = d.get("mpesa_code") or d.get("mpesa")
