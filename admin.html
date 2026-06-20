@@ -363,23 +363,23 @@ function orderCard(o) {
   const items = JSON.parse(o.items_json || '[]');
   const date = (o.created_at || '').slice(0, 10);
   const b = {
-    pending: `<span class="badge b-p" onclick="updateStatus('${o.ref}','paid')">⏳ PENDING — tap to mark PAID</span>`,
-    paid: `<span class="badge b-pa" onclick="updateStatus('${o.ref}','packed')">✓ PAID — tap to mark PACKED</span>`,
-    packed: `<span class="badge b-pk" onclick="updateStatus('${o.ref}','delivered')">📦 PACKED — tap to mark DELIVERED</span>`,
+    pending: `<span class="badge b-p" onclick="updateStatus('${o.order_ref || o.ref}','paid')">⏳ PENDING — tap to mark PAID</span>`,
+    paid: `<span class="badge b-pa" onclick="updateStatus('${o.order_ref || o.ref}','packed')">✓ PAID — tap to mark PACKED</span>`,
+    packed: `<span class="badge b-pk" onclick="updateStatus('${o.order_ref || o.ref}','delivered')">📦 PACKED — tap to mark DELIVERED</span>`,
     delivered: `<span class="badge b-d">🚚 DELIVERED</span>`
   }[o.status] || `<span class="badge b-p">⏳ PENDING</span>`;
   return `<div class="oc">
     <div style="flex:1;min-width:0;">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
         <div class="oc-id">#${o.id}</div>${b}
-        <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);">${o.ref} · ${date}</span>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);">${o.order_ref || o.ref} · ${date}</span>
       </div>
       <div class="oc-items">${items.map(i => i.name + (i.size ? ' (' + i.size + ')' : '')).join(', ')}</div>
-      <div class="oc-meta">👤 ${o.customer_name} &nbsp;|&nbsp; 📞 ${o.customer_phone}<br>📍 ${o.customer_address} &nbsp;|&nbsp; 💳 ${o.mpesa_code}</div>
+      <div class="oc-meta">👤 ${o.customer_name} &nbsp;|&nbsp; 📞 ${o.customer_phone}<br>📍 ${o.delivery_address || o.customer_address || ''} &nbsp;|&nbsp; 💳 ${o.mpesa_receipt || ''}</div>
     </div>
     <div class="oc-right">
       <div class="oc-total">KES ${fmt(o.total)}</div>
-      <button class="btn btn-g btn-sm" onclick="showReceipt('${o.ref}')">🧾 Receipt</button>
+      <button class="btn btn-g btn-sm" onclick="showReceipt('${o.order_ref || o.ref}')">🧾 Receipt</button>
     </div>
   </div>`;
 }
@@ -463,16 +463,16 @@ async function addProduct() {
 
 // RECEIPT
 function showReceipt(ref) {
-  const o = orders.find(x => x.ref === ref); if (!o) return;
+  const o = orders.find(x => (x.order_ref || x.ref) === ref); if (!o) return;
   const items = JSON.parse(o.items_json || '[]');
   document.getElementById('rb').innerHTML = `
     ${items.map(i => `<div class="rl"><span class="lbl">${i.name}${i.size ? ' (' + i.size + ')' : ''}</span><span class="val">KES ${fmt(i.price)}</span></div>`).join('')}
     <div class="rt"><span class="lbl">TOTAL</span><span class="val">KES ${fmt(o.total)}</span></div>
-    <div class="rl"><span class="lbl">Order Ref</span><span class="val" style="color:var(--accent);font-family:'Share Tech Mono',monospace;">${o.ref}</span></div>
-    <div class="rl"><span class="lbl">M-Pesa Code</span><span class="val" style="font-family:'Share Tech Mono',monospace;">${o.mpesa_code}</span></div>
+    <div class="rl"><span class="lbl">Order Ref</span><span class="val" style="color:var(--accent);font-family:'Share Tech Mono',monospace;">${o.order_ref || o.ref}</span></div>
+    <div class="rl"><span class="lbl">M-Pesa Code</span><span class="val" style="font-family:'Share Tech Mono',monospace;">${o.mpesa_receipt || ''}</span></div>
     <div class="rl"><span class="lbl">Customer</span><span class="val">${o.customer_name}</span></div>
     <div class="rl"><span class="lbl">Phone</span><span class="val">${o.customer_phone}</span></div>
-    <div class="rl"><span class="lbl">Deliver To</span><span class="val">${o.customer_address}</span></div>
+    <div class="rl"><span class="lbl">Deliver To</span><span class="val">${o.delivery_address || o.customer_address || ''}</span></div>
     <div class="rl"><span class="lbl">Status</span><span class="val">${o.status.toUpperCase()}</span></div>
     <div class="rl"><span class="lbl">Date</span><span class="val">${(o.created_at || '').slice(0, 10)}</span></div>`;
   document.getElementById('receipt-modal').classList.add('open');
