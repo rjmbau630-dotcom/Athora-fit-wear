@@ -443,3 +443,18 @@ if __name__ == "__main__":
     print(f"[APP] Running → http://localhost:{port}")
     print(f"[MPESA] {MPESA_ENV} | Shortcode: {MPESA_SHORTCODE}")
     app.run(host="0.0.0.0", port=port, debug=False)
+supabase
+  .channel('new-orders')
+  .on(
+    'postgres_changes',
+    {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'orders'
+    },
+    payload => {
+      showToast('🔔 New order received');
+      loadOrders();
+    }
+  )
+  .subscribe();
