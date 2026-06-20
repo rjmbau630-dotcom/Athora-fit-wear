@@ -150,12 +150,12 @@ def toggle_stock(pid):
         return jsonify({"error": str(e)}), 500
 
 # ── ORDERS ───────────────────────────────────────────────
-@app.route("/api/checkout", methods=["POST"])
+c@app.route("/api/checkout", methods=["POST"])
 def checkout():
     d = request.get_json() or {}
-     mpesa_code = d.get("mpesa_code") or d.get("mpesa")
+    mpesa_code = d.get("mpesa_code") or d.get("mpesa")
 
-    for f in ["name","phone","address","cart"]:
+    for f in ["name", "phone", "address", "cart"]:
         if not d.get(f):
             return jsonify({"error": f"'{f}' is required"}), 400
 
@@ -172,7 +172,33 @@ def checkout():
                           "size": entry.get("size","") if isinstance(entry,dict) else "", "category": p["category"]})
         ref = make_ref()
         q_run(
-            INSERT INTO orders ( customer_name,customer_phone,delivery_address,payment_method,mpesa_phone,subtotal,delivery_cost,total,status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);
+            q_run(
+    """
+    INSERT INTO orders (
+        customer_name,
+        customer_phone,
+        delivery_address,
+        payment_method,
+        mpesa_phone,
+        subtotal,
+        delivery_cost,
+        total,
+        status
+    )
+    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+    """,
+    (
+        d["name"].strip(),
+        d["phone"].strip(),
+        d["address"].strip(),
+        "mpesa",
+        d["phone"].strip(),   # or another phone field
+        total,
+        0,                    # delivery_cost
+        total,
+        "pending"
+    )
+)
     (ref, d["name"].strip(), d["phone"].strip(), d["address"].strip(),
      json.dumps(items), total, mpesa_code.strip())
 )
