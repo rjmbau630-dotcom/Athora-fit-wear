@@ -157,56 +157,67 @@ def toggle_stock(pid):
 @app.route("/api/checkout", methods=["POST"])
 def checkout():
     d = request.get_json() or {}
-    mpesa_code = d.get("mpesa_code") or d.get("mpesa")
 
     for f in ["name", "phone", "address", "cart"]:
         if not d.get(f):
             return jsonify({"error": f"'{f}' is required"}), 400
 
-    if not mpesa_code:
-        return jsonify({"error": "'mpesa_code' is required"}), 400
     try:
-        total, items = 0, []
+        total = 0
+
         for entry in d["cart"]:
             pid = entry.get("id") if isinstance(entry, dict) else entry
-            p = q_one("SELECT * FROM products WHERE id=%s", (pid,))
-            if not p: return jsonify({"error": f"Product {pid} not found"}), 404
+
+            p = q_one(
+                "SELECT * FROM products WHERE id=%s",
+                (pid,)
+            )
+
+            if not p:
+                return jsonify(
+                    {"error": f"Product {pid} not found"}
+                ), 404
+
             total += p["price"]
-            items.append({"id": p["id"], "name": p["name"], "price": p["price"],
-                          "size": entry.get("size","") if isinstance(entry,dict) else "", "category": p["category"]})
+
         ref = make_ref()
+
         q_run(
-            q_run(
-    """
-    INSERT INTO orders (
-        customer_name,
-        customer_phone,
-        delivery_address,
-        payment_method,
-        mpesa_phone,
-        subtotal,
-        delivery_cost,
-        total,
-        status
-    )
-    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
-    """,
-    (
-        d["name"].strip(),
-        d["phone"].strip(),
-        d["address"].strip(),
-        "mpesa",
-        d["phone"].strip(),   # or another phone field
-        total,
-        0,                    # delivery_cost
-        total,
-        "pending"
-    )
-)
-    (ref, d["name"].strip(), d["phone"].strip(), d["address"].strip(),
-     json.dumps(items), total, mpesa_code.strip())
-)
-        return jsonify({"success": True, "ref": ref, "total": total})
+            """
+            INSERT INTO orders (
+                ref,
+                customer_name,
+                customer_phone,
+                delivery_address,
+                payment_method,
+                mpesa_phone,
+                subtotal,
+                delivery_cost,
+                total,
+                status
+            )
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            """,
+            (
+                ref,
+                d["name"].strip(),
+                d["phone"].strip(),
+                d["address"].strip(),
+                "mpesa",
+                d["phone"].strip(),
+                total,
+                0,
+                total,
+                "pending"
+            )
+        )
+
+        return jsonify({
+            "success": True,
+            "receipt": ref,
+            "total": total
+        })
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
