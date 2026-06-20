@@ -241,6 +241,7 @@ footer{border-top:1px solid var(--border);padding:28px 40px;margin-top:60px;disp
   .mpesa-fields{grid-template-columns:1fr;}
 }
 @media print{nav,.promo,.wa-btn,#toast,#pwa-bar,footer{display:none!important;}}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -374,11 +375,19 @@ footer{border-top:1px solid var(--border);padding:28px 40px;margin-top:60px;disp
             </div>
           </div>
         </div>
-        <div class="field"><label>M-Pesa Transaction Code</label><input id="f-mpesa" type="text" placeholder="e.g. QKL7XXXXXXX" style="text-transform:uppercase;letter-spacing:2px;"></div>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
-          <button class="btn btn-primary btn-lg btn-full" id="place-btn" onclick="placeOrder()">✓ CONFIRM ORDER</button>
+        <!-- STK PUSH BUTTON -->
+        <div id="co-form-actions" style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+          <button class="btn btn-primary btn-lg btn-full" id="place-btn" onclick="placeOrder()">📲 PAY WITH M-PESA</button>
           <button class="btn btn-ghost btn-full" onclick="go('cart')">← Back to Cart</button>
         </div>
+      </div>
+      <!-- PAYMENT STATUS SCREEN -->
+      <div id="pay-status" style="display:none;text-align:center;padding:40px 20px;">
+        <div id="pay-spinner" style="width:60px;height:60px;border:3px solid #2a2a2a;border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;"></div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:3px;margin-bottom:10px;">CHECK YOUR PHONE 📱</div>
+        <div style="color:var(--muted2);font-size:14px;line-height:1.8;margin-bottom:16px;">An M-Pesa PIN prompt has been sent to your phone.<br>Enter your M-Pesa PIN to complete payment.</div>
+        <div id="pay-timer" style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);margin-top:8px;letter-spacing:1px;"></div>
+        <div id="pay-ref" style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent);margin-top:8px;letter-spacing:2px;"></div>
       </div>
     </div>
   </div>
@@ -714,33 +723,104 @@ function renderCheckout() {
   if (fd) fd.style.display = total >= FD ? 'block' : 'none';
 }
 
+let pollTimer = null;
+
 async function placeOrder() {
   const name = document.getElementById('f-name').value.trim();
   const phone = document.getElementById('f-phone').value.trim();
   const addr = document.getElementById('f-addr').value.trim();
-  const mpesa = document.getElementById('f-mpesa').value.trim().toUpperCase();
-  if (!name) { toast('⚠ Enter your name'); return; }
-  if (!phone) { toast('⚠ Enter your phone number'); return; }
-  if (!addr) { toast('⚠ Enter your delivery address'); return; }
-  if (!mpesa) { toast('⚠ Enter M-Pesa transaction code'); return; }
+  if (!name)  { toast('⚠ Enter your name'); return; }
+  if (!phone) { toast('⚠ Enter your M-Pesa phone number'); return; }
+  if (!addr)  { toast('⚠ Enter your delivery address'); return; }
+
   const btn = document.getElementById('place-btn');
-  btn.textContent = 'Placing order...'; btn.disabled = true;
+  btn.textContent = 'Sending PIN prompt...'; btn.disabled = true;
+
   const { ok, data, error } = await api('/api/checkout', 'POST', {
-    name, phone, address: addr, mpesa_code: mpesa,
+    name, phone, address: addr,
     cart: cart.map(item => ({ id: item.id, size: item.size }))
   });
-  if (ok) {
+
+  if (ok && data.success) {
+    // Show waiting screen
+    document.getElementById('co-form').style.display = 'none';
+    document.getElementById('pay-status').style.display = 'block';
+    document.getElementById('pay-ref').textContent = 'Order: ' + data.ref;
+    toast('📲 M-Pesa PIN prompt sent to your phone!');
+
+    // Build order object for receipt later
     currentOrder = {
-      ref: data.ref, total: data.total, name, phone, addr, mpesa,
+      ref: data.ref, total: data.total, name, phone, addr, mpesa: '',
       items: cart.map(item => { const p = products.find(x => x.id === item.id); return { name: p?.name, price: p?.price, size: item.size, category: p?.category }; }).filter(x => x.name),
       date: new Date()
     };
-    cart = []; updateCartCount(); await loadStats();
-    showSuccess();
+
+    // Start polling for payment confirmation
+    startPolling(data.ref, data.total);
   } else {
-    toast('❌ ' + (error || 'Order failed. Please try again.'));
-    btn.textContent = '✓ CONFIRM ORDER'; btn.disabled = false;
+    toast('❌ ' + (error || data?.error || 'Failed to initiate payment'));
+    btn.textContent = '📲 PAY WITH M-PESA'; btn.disabled = false;
   }
+}
+
+function startPolling(ref, total) {
+  let attempts = 0;
+  const maxAttempts = 40; // 2 minutes (40 × 3s)
+  const timerEl = document.getElementById('pay-timer');
+
+  pollTimer = setInterval(async () => {
+    attempts++;
+    const remaining = (maxAttempts - attempts) * 3;
+    timerEl.textContent = `Waiting for confirmation... (${remaining}s)`;
+
+    try {
+      const { ok, data } = await api(`/api/order-status/${ref}`);
+      if (ok) {
+        if (data.status === 'paid') {
+          clearInterval(pollTimer);
+          currentOrder.mpesa = data.mpesa_receipt || '';
+          cart = []; updateCartCount(); await loadStats();
+          showSuccess();
+        } else if (data.status === 'cancelled') {
+          clearInterval(pollTimer);
+          showPayFailed(ref);
+        } else if (attempts >= maxAttempts) {
+          clearInterval(pollTimer);
+          showPayTimeout(ref);
+        }
+      }
+    } catch (e) { console.error('Poll error:', e); }
+  }, 3000);
+}
+
+function showPayFailed(ref) {
+  document.getElementById('pay-status').innerHTML = `
+    <div style="font-size:56px;margin-bottom:16px;">❌</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:var(--red);margin-bottom:8px;">PAYMENT CANCELLED</div>
+    <div style="color:var(--muted2);font-size:14px;margin-bottom:24px;">You cancelled the M-Pesa prompt. Your order is saved — try again.</div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-primary btn-lg" onclick="resetCheckoutForm()">Try Again</button>
+      <a href="https://wa.me/254724357210?text=Hi!%20I%20had%20trouble%20paying%20for%20order%20${ref}" target="_blank" class="btn btn-lg" style="background:var(--wa);color:#fff;border:none;text-decoration:none;">💬 WhatsApp Help</a>
+    </div>`;
+}
+
+function showPayTimeout(ref) {
+  document.getElementById('pay-status').innerHTML = `
+    <div style="font-size:56px;margin-bottom:16px;">⏱️</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:var(--accent);margin-bottom:8px;">TAKING TOO LONG?</div>
+    <div style="color:var(--muted2);font-size:14px;margin-bottom:6px;">If you completed the payment, we will confirm your order shortly.</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent);margin-bottom:24px;letter-spacing:2px;">Order Ref: ${ref}</div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <a href="https://wa.me/254724357210?text=Hi!%20I%20paid%20for%20order%20${ref}%20but%20it%20is%20not%20confirmed%20yet." target="_blank" class="btn btn-lg" style="background:var(--wa);color:#fff;border:none;text-decoration:none;">💬 Contact Us</a>
+      <button class="btn btn-ghost btn-lg" onclick="go('shop')">Back to Shop</button>
+    </div>`;
+}
+
+function resetCheckoutForm() {
+  document.getElementById('co-form').style.display = 'block';
+  document.getElementById('pay-status').style.display = 'none';
+  const btn = document.getElementById('place-btn');
+  if (btn) { btn.textContent = '📲 PAY WITH M-PESA'; btn.disabled = false; }
 }
 
 function showSuccess() {
