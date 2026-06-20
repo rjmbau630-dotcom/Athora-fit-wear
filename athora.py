@@ -202,7 +202,6 @@ def checkout():
     (ref, d["name"].strip(), d["phone"].strip(), d["address"].strip(),
      json.dumps(items), total, mpesa_code.strip())
 )
-        )
         return jsonify({"success": True, "ref": ref, "total": total})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
