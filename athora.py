@@ -153,7 +153,7 @@ def toggle_stock(pid):
 @app.route("/api/checkout", methods=["POST"])
 def checkout():
     d = request.get_json() or {}
-   mpesa_code = d.get("mpesa_code") or d.get("mpesa")
+       mpesa_code = d.get("mpesa_code") or d.get("mpesa")
 
     for f in ["name","phone","address","cart"]:
         if not d.get(f):
