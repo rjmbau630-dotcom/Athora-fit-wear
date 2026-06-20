@@ -153,9 +153,14 @@ def toggle_stock(pid):
 @app.route("/api/checkout", methods=["POST"])
 def checkout():
     d = request.get_json() or {}
-    for f in ["name","phone","address","cart","mpesa"]:
+   mpesa_code = d.get("mpesa_code") or d.get("mpesa")
+
+    for f in ["name","phone","address","cart"]:
         if not d.get(f):
             return jsonify({"error": f"'{f}' is required"}), 400
+
+    if not mpesa_code:
+        return jsonify({"error": "'mpesa_code' is required"}), 400
     try:
         total, items = 0, []
         for entry in d["cart"]:
@@ -167,9 +172,10 @@ def checkout():
                           "size": entry.get("size","") if isinstance(entry,dict) else "", "category": p["category"]})
         ref = make_ref()
         q_run(
-            "INSERT INTO orders(ref,customer_name,customer_phone,customer_address,items_json,total,mpesa) VALUES(%s,%s,%s,%s,%s,%s,%s)",
-            (ref, d["name"].strip(), d["phone"].strip(), d["address"].strip(),
-             json.dumps(items), total, d["mpesa"].strip())
+            "INSERT INTO orders(ref,customer_name,customer_phone,customer_address,items_json,total,mpesa_code) VALUES(%s,%s,%s,%s,%s,%s,%s)",
+    (ref, d["name"].strip(), d["phone"].strip(), d["address"].strip(),
+     json.dumps(items), total, mpesa_code.strip())
+)
         )
         return jsonify({"success": True, "ref": ref, "total": total})
     except Exception as e:
