@@ -438,23 +438,4 @@ if DATABASE_URL:
 else:
     print("[DB] ⚠  DATABASE_URL not set in environment")
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    print(f"[APP] Running → http://localhost:{port}")
-    print(f"[MPESA] {MPESA_ENV} | Shortcode: {MPESA_SHORTCODE}")
-    app.run(host="0.0.0.0", port=port, debug=False)
-supabase
-  .channel('new-orders')
-  .on(
-    'postgres_changes',
-    {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'orders'
-    },
-    payload => {
-      showToast('🔔 New order received');
-      loadOrders();
-    }
-  )
-  .subscribe();
+
