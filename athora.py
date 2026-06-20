@@ -4,7 +4,11 @@ Flask + PostgreSQL (Supabase) + M-Pesa
 """
 import os, json, secrets
 from flask import Flask, request, session, jsonify, Response
-
+import random
+from datetime import datetime
+def make_ref():
+    return f"ATH-{datetime.now().strftime('%Y%m%d')}-{random.randint(1000,9999)}"
+    
 # ── CONFIG ──────────────────────────────────────────────
 ADMIN_PIN    = "Ryan mkuu"
 FLASK_SECRET = "athora-secret-2025-x9k"
