@@ -153,7 +153,7 @@ def toggle_stock(pid):
 @app.route("/api/checkout", methods=["POST"])
 def checkout():
     d = request.get_json() or {}
-    for f in ["name","phone","address","cart","mpesa_code"]:
+    for f in ["name","phone","address","cart","mpesa"]:
         if not d.get(f):
             return jsonify({"error": f"'{f}' is required"}), 400
     try:
@@ -167,9 +167,9 @@ def checkout():
                           "size": entry.get("size","") if isinstance(entry,dict) else "", "category": p["category"]})
         ref = make_ref()
         q_run(
-            "INSERT INTO orders(ref,customer_name,customer_phone,customer_address,items_json,total,mpesa_code) VALUES(%s,%s,%s,%s,%s,%s,%s)",
+            "INSERT INTO orders(ref,customer_name,customer_phone,customer_address,items_json,total,mpesa) VALUES(%s,%s,%s,%s,%s,%s,%s)",
             (ref, d["name"].strip(), d["phone"].strip(), d["address"].strip(),
-             json.dumps(items), total, d["mpesa_code"].strip())
+             json.dumps(items), total, d["mpesa"].strip())
         )
         return jsonify({"success": True, "ref": ref, "total": total})
     except Exception as e:
