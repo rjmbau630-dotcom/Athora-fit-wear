@@ -172,7 +172,7 @@ def checkout():
                           "size": entry.get("size","") if isinstance(entry,dict) else "", "category": p["category"]})
         ref = make_ref()
         q_run(
-            "INSERT INTO orders(ref,customer_name,customer_phone,customer_address,items_json,total,mpesa_code) VALUES(%s,%s,%s,%s,%s,%s,%s)",
+            INSERT INTO orders ( customer_name,customer_phone,delivery_address,payment_method,mpesa_phone,subtotal,delivery_cost,total,status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);
     (ref, d["name"].strip(), d["phone"].strip(), d["address"].strip(),
      json.dumps(items), total, mpesa_code.strip())
 )
