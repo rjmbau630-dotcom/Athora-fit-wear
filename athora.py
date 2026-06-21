@@ -257,15 +257,27 @@ def checkout():
         phone = d["phone"].strip()
 
         # Save order immediately as pending
-        q_run(
-            """INSERT INTO orders
-               (order_ref, customer_name, customer_phone, delivery_address,
-                items_json, subtotal, delivery_cost, total, mpesa_phone)
-               VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
-            (order_ref, d["name"].strip(), phone, d["address"].strip(),
-             json.dumps(items), subtotal, delivery_cost, total, phone)
+       q_run(
+          """INSERT INTO orders
+             (id, order_ref, customer_name, customer_phone, delivery_address,
+             payment_method, mpesa_phone, items_json,
+             subtotal, delivery_cost, total, status)
+             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+        (
+          order_ref,                  # id
+          order_ref,                  # order_ref
+          d["name"].strip(),
+          phone,
+          d["address"].strip(),
+          "mpesa",
+          phone,
+          json.dumps(items),
+          subtotal,
+          delivery_cost,
+          total,
+          "pending"
         )
-
+     )
         log.info(f"[ORDER] {order_ref} saved | KES {total} | {d['name']}")
 
         # Fire STK push
