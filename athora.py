@@ -325,16 +325,19 @@ def mpesa_callback():
     return jsonify({"ResultCode": 0, "ResultDescription": "Success"}), 200
 
 # ── ORDER STATUS POLLING ─────────────────────────────────
-@app.route("/api/order-status/<int:order_id>")
+@app.route("/api/order-status/<order_id>")
 def order_status(order_id):
     try:
         o = q_one(
             "SELECT id, status, mpesa_receipt, total, paid_at, created_at FROM orders WHERE id=%s",
             (order_id,)
         )
+
         if not o:
             return jsonify({"error": "Order not found"}), 404
+
         return jsonify(o)
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
