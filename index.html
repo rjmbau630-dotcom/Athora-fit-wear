@@ -945,7 +945,6 @@ function initPWA() {
 }
 function installPWA() { if (!deferredPrompt) return; deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById('pwa-bar').classList.remove('show'); }); }
 function dismissPWA() { document.getElementById('pwa-bar').classList.remove('show'); localStorage.setItem('pwa-off', '1'); }
-<script>
 const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co";
 const SUPABASE_ANON_KEY = "YOUR_PUBLIC_ANON_KEY";
 const supabase = window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
