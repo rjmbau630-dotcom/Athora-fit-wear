@@ -278,7 +278,7 @@ footer{border-top:1px solid var(--border);padding:28px 40px;margin-top:60px;disp
   <div class="nav-links">
     <button class="nav-link on" onclick="go('shop')">Shop</button>
     <button class="nav-link" onclick="go('about')">About</button>
-    <button class="nav-link" onclick="go('track')">Track Order</button>
+    <button class="nav-link" onclick="go('track')" title="Track Order">📦 Track</button>
     <button class="cart-btn" onclick="go('cart')">🛒 Cart <span class="cart-count" id="cart-count">0</span></button>
   </div>
 </nav>
@@ -429,7 +429,7 @@ footer{border-top:1px solid var(--border);padding:28px 40px;margin-top:60px;disp
       <div style="background:var(--bg2);border:1px solid var(--border);padding:32px;margin-bottom:24px;">
         <div class="field">
           <label>Enter Your Order Reference</label>
-          <input id="track-input" type="text" placeholder="ATH-XXXXXX" style="text-transform:uppercase;letter-spacing:3px;font-family:'Share Tech Mono',monospace;">
+          <input id="track-input" type="text" placeholder="ATH-XXXXXX" style="text-transform:uppercase;letter-spacing:3px;font-family:'Share Tech Mono',monospace;" onkeydown="if(event.key==='Enter')trackOrder()">
         </div>
         <button class="btn btn-primary btn-lg btn-full" onclick="trackOrder()">TRACK MY ORDER</button>
       </div>

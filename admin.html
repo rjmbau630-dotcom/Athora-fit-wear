@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Athora Fit — Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -293,6 +294,7 @@ async function doLogin() {
     document.getElementById('login').classList.add('hide');
     document.getElementById('dash').classList.add('show');
     await loadAll();
+    initRealtime();
   } else {
     document.getElementById('login-err').textContent = '❌ Wrong PIN — try again';
     document.getElementById('pin').value = '';
@@ -480,6 +482,60 @@ function showReceipt(ref) {
 function closeReceipt() { document.getElementById('receipt-modal').classList.remove('open'); }
 
 // TOAST
+// ── SUPABASE REALTIME ──
+const SUPABASE_URL = 'https://ndipdrjjbegbanliwlxq.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5kaXBkcmpqYmVnYmFubGl3bHhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MjAwMDAwMDAwMH0.placeholder';
+
+async function initRealtime() {
+  // Get supabase config from server
+  try {
+    const res = await fetch('/api/realtime-config');
+    if (!res.ok) { startPollingFallback(); return; }
+    const cfg = await res.json();
+    if (!cfg.url || !cfg.key) { startPollingFallback(); return; }
+
+    const sb = supabase.createClient(cfg.url, cfg.key);
+    sb.channel('new-orders')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'orders'
+      }, async payload => {
+        toast('🔔 New order received!');
+        const ordTab = document.querySelectorAll('.tab-btn')[1];
+        if (ordTab) {
+          ordTab.style.background = 'var(--accent)';
+          ordTab.style.color = '#000';
+          setTimeout(() => { ordTab.style.background = ''; ordTab.style.color = ''; }, 2500);
+        }
+        await loadOrders();
+        renderOverview();
+      })
+      .subscribe(status => {
+        console.log('[Realtime]', status);
+        if (status === 'SUBSCRIBED') {
+          toast('🟢 Live updates active');
+        }
+      });
+  } catch(e) {
+    console.warn('[Realtime] Falling back to polling:', e.message);
+    startPollingFallback();
+  }
+}
+
+// Fallback: poll every 30s if realtime not available
+function startPollingFallback() {
+  console.log('[Realtime] Using 30s poll fallback');
+  setInterval(async () => {
+    const prev = orders.length;
+    await loadOrders();
+    if (orders.length > prev) {
+      toast('🔔 New order received!');
+      renderOverview();
+    }
+  }, 30000);
+}
+
 let _tt;
 function toast(msg) {
   const t = document.getElementById('toast');

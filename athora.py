@@ -24,6 +24,10 @@ MPESA_PASSKEY         = os.environ.get("MPESA_PASSKEY",         "bfb279f9aa9bdbc
 MPESA_CALLBACK_URL    = os.environ.get("MPESA_CALLBACK_URL",    "https://athora-fit-wear.onrender.com/mpesa/callback")
 MPESA_BASE            = "https://api.safaricom.co.ke" if MPESA_ENV == "production" else "https://sandbox.safaricom.co.ke"
 
+# Supabase — for realtime notifications
+SUPABASE_URL          = os.environ.get("SUPABASE_URL",      "")
+SUPABASE_ANON_KEY     = os.environ.get("SUPABASE_ANON_KEY", "")
+
 # ── APP ──────────────────────────────────────────────────
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET
@@ -255,25 +259,13 @@ def checkout():
         # Save order immediately as pending
         q_run(
             """INSERT INTO orders
-            (id, order_ref, customer_name, customer_phone, delivery_address,
-             payment_method, mpesa_phone, items_json,
-             subtotal, delivery_cost, total, status)
-             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
-       (
-           order_ref,                      # id
-            order_ref,                      # order_ref
-            d["name"].strip(),
-            phone,
-            d["address"].strip(),
-            "mpesa",                        # payment_method
-            phone,                          # mpesa_phone
-            json.dumps(items),
-            subtotal,
-            delivery_cost,
-            total,
-           "pending"
-          )
-        )  
+               (order_ref, customer_name, customer_phone, delivery_address,
+                items_json, subtotal, delivery_cost, total, mpesa_phone)
+               VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+            (order_ref, d["name"].strip(), phone, d["address"].strip(),
+             json.dumps(items), subtotal, delivery_cost, total, phone)
+        )
+
         log.info(f"[ORDER] {order_ref} saved | KES {total} | {d['name']}")
 
         # Fire STK push
@@ -407,6 +399,16 @@ def stats():
     except Exception as e:
         return jsonify({"products": 0, "orders": 0, "error": str(e)})
 
+# ── REALTIME CONFIG (serves supabase keys to admin) ─────
+@app.route("/api/realtime-config")
+@admin_req
+def realtime_config():
+    return jsonify({
+        "url": SUPABASE_URL,
+        "key": SUPABASE_ANON_KEY,
+        "available": bool(SUPABASE_URL and SUPABASE_ANON_KEY)
+    })
+
 # ── HEALTH ───────────────────────────────────────────────
 @app.route("/health")
 def health():
@@ -438,4 +440,8 @@ if DATABASE_URL:
 else:
     print("[DB] ⚠  DATABASE_URL not set in environment")
 
-
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    print(f"[APP] Running → http://localhost:{port}")
+    print(f"[MPESA] {MPESA_ENV} | Shortcode: {MPESA_SHORTCODE}")
+    app.run(host="0.0.0.0", port=port, debug=False)
