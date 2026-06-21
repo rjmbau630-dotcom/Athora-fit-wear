@@ -24,10 +24,6 @@ MPESA_PASSKEY         = os.environ.get("MPESA_PASSKEY",         "bfb279f9aa9bdbc
 MPESA_CALLBACK_URL    = os.environ.get("MPESA_CALLBACK_URL",    "https://athora-fit-wear.onrender.com/mpesa/callback")
 MPESA_BASE            = "https://api.safaricom.co.ke" if MPESA_ENV == "production" else "https://sandbox.safaricom.co.ke"
 
-# Supabase — for realtime notifications
-SUPABASE_URL          = os.environ.get("https://ndipdrjjbegbanliwlxq.supabase.co",      "")
-SUPABASE_ANON_KEY     = os.environ.get("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5kaXBkcmpqYmVnYmFubGl3bHhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0OTgzMDgsImV4cCI6MjA4OTA3NDMwOH0.Er-4MwROgCGysj35ynMO3bPEjoty-g-iN5K_m03bgdo", "")
-
 # ── APP ──────────────────────────────────────────────────
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET
@@ -56,7 +52,6 @@ def init_db():
 
                 CREATE TABLE IF NOT EXISTS orders (
                     id                  SERIAL PRIMARY KEY,
-                    order_ref           TEXT UNIQUE NOT NULL,
                     customer_name       TEXT NOT NULL,
                     customer_phone      TEXT NOT NULL,
                     delivery_address    TEXT NOT NULL,
@@ -72,6 +67,8 @@ def init_db():
                     created_at          TIMESTAMP DEFAULT NOW(),
                     paid_at             TIMESTAMP
                 );
+
+                ALTER TABLE orders DROP COLUMN IF EXISTS order_ref;
             """)
         conn.commit()
     log.info("[DB] ✅ Tables ready")
@@ -101,9 +98,6 @@ def q_run(sql, p=()):
                 return None
 
 # ── HELPERS ──────────────────────────────────────────────
-def make_ref():
-    return "ATH-" + secrets.token_urlsafe(5).upper()[:6]
-
 def fmt_phone(p):
     p = "".join(filter(str.isdigit, str(p)))
     if p.startswith("0") and len(p) == 10:
@@ -253,57 +247,45 @@ def checkout():
 
         delivery_cost = 0  # Free delivery threshold handled on frontend
         total = subtotal + delivery_cost
-        order_ref = make_ref()
         phone = d["phone"].strip()
 
         # Save order immediately as pending
-        q_run(
-          """INSERT INTO orders
-             (id, order_ref, customer_name, customer_phone, delivery_address,
-             payment_method, mpesa_phone, items_json,
-             subtotal, delivery_cost, total, status)
-             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
-        (
-          order_ref,                  # id
-          order_ref,                  # order_ref
-          d["name"].strip(),
-          phone,
-          d["address"].strip(),
-          "mpesa",
-          phone,
-          json.dumps(items),
-          subtotal,
-          delivery_cost,
-          total,
-          "pending"
+        order_id = q_run(
+            """INSERT INTO orders
+               (customer_name, customer_phone, delivery_address,
+                items_json, subtotal, delivery_cost, total, mpesa_phone)
+               VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+               RETURNING id""",
+            (d["name"].strip(), phone, d["address"].strip(),
+             json.dumps(items), subtotal, delivery_cost, total, phone)
         )
-     )
-        log.info(f"[ORDER] {order_ref} saved | KES {total} | {d['name']}")
 
-        # Fire STK push
-        stk_ok, checkout_id, stk_msg = mpesa_stk_push(phone, total, order_ref)
+        log.info(f"[ORDER] #{order_id} saved | KES {total} | {d['name']}")
+
+        # Fire STK push — use the order id as the M-Pesa account reference
+        stk_ok, checkout_id, stk_msg = mpesa_stk_push(phone, total, str(order_id))
 
         if stk_ok:
             q_run(
-                "UPDATE orders SET checkout_request_id=%s WHERE order_ref=%s",
-                (checkout_id, order_ref)
+                "UPDATE orders SET checkout_request_id=%s WHERE id=%s",
+                (checkout_id, order_id)
             )
             return jsonify({
                 "success":     True,
-                "order_ref":   order_ref,
+                "order_id":    order_id,
                 "total":       total,
                 "checkout_id": checkout_id,
                 "message":     "Order saved! M-Pesa PIN prompt sent to your phone."
             })
         else:
             # Order is saved — STK failed but customer can still pay manually
-            log.warning(f"[STK FAILED] {order_ref}: {stk_msg}")
+            log.warning(f"[STK FAILED] #{order_id}: {stk_msg}")
             return jsonify({
                 "success":   True,
-                "order_ref": order_ref,
+                "order_id":  order_id,
                 "total":     total,
                 "stk_error": stk_msg,
-                "message":   "Order saved! STK push failed — please pay via M-Pesa Paybill 516600, Acc 947458 and quote your ref."
+                "message":   "Order saved! STK push failed — please pay via M-Pesa Paybill 516600, Acc 947458 and quote your order number."
             })
 
     except Exception as e:
@@ -343,12 +325,12 @@ def mpesa_callback():
     return jsonify({"ResultCode": 0, "ResultDescription": "Success"}), 200
 
 # ── ORDER STATUS POLLING ─────────────────────────────────
-@app.route("/api/order-status/<ref>")
-def order_status(ref):
+@app.route("/api/order-status/<int:order_id>")
+def order_status(order_id):
     try:
         o = q_one(
-            "SELECT order_ref, status, mpesa_receipt, total, paid_at, created_at FROM orders WHERE order_ref=%s",
-            (ref,)
+            "SELECT id, status, mpesa_receipt, total, paid_at, created_at FROM orders WHERE id=%s",
+            (order_id,)
         )
         if not o:
             return jsonify({"error": "Order not found"}), 404
@@ -357,19 +339,35 @@ def order_status(ref):
         return jsonify({"error": str(e)}), 500
 
 # ── CUSTOMER ORDER TRACKING ──────────────────────────────
-@app.route("/api/track/<ref>")
-def track_order(ref):
+@app.route("/api/track/<int:order_id>")
+def track_order(order_id):
     try:
         o = q_one(
-            """SELECT order_ref, customer_name, delivery_address,
+            """SELECT id, customer_name, delivery_address,
                       items_json, total, status, created_at, paid_at, mpesa_receipt
-               FROM orders WHERE order_ref=%s""",
-            (ref.upper(),)
+               FROM orders WHERE id=%s""",
+            (order_id,)
         )
         if not o:
-            return jsonify({"error": "Order not found. Check your reference number."}), 404
+            return jsonify({"error": "Order not found. Check your order number."}), 404
         o["items"] = json.loads(o.get("items_json","[]"))
         return jsonify(o)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/order/<int:order_id>")
+def get_order(order_id):
+    try:
+        order = q_one(
+            "SELECT * FROM orders WHERE id=%s",
+            (order_id,)
+        )
+
+        if not order:
+            return jsonify({"error": "Order not found"}), 404
+
+        return jsonify(order)
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -379,7 +377,7 @@ def track_order(ref):
 def get_orders():
     try:
         rows = q_all(
-            """SELECT id, order_ref, customer_name, customer_phone,
+            """SELECT id, customer_name, customer_phone,
                       delivery_address, items_json, total, status,
                       mpesa_receipt, mpesa_phone, created_at, paid_at
                FROM orders ORDER BY id DESC"""
@@ -388,15 +386,15 @@ def get_orders():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/orders/<ref>/status", methods=["POST"])
+@app.route("/api/orders/<int:order_id>/status", methods=["POST"])
 @admin_req
-def update_order_status(ref):
+def update_order_status(order_id):
     d = request.get_json() or {}
     status = d.get("status")
     if status not in ["pending","paid","packed","delivered","cancelled"]:
         return jsonify({"error": "Invalid status"}), 400
     try:
-        q_run("UPDATE orders SET status=%s WHERE order_ref=%s", (status, ref))
+        q_run("UPDATE orders SET status=%s WHERE id=%s", (status, order_id))
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -410,16 +408,6 @@ def stats():
         return jsonify({"products": prods, "orders": ords})
     except Exception as e:
         return jsonify({"products": 0, "orders": 0, "error": str(e)})
-
-# ── REALTIME CONFIG (serves supabase keys to admin) ─────
-@app.route("/api/realtime-config")
-@admin_req
-def realtime_config():
-    return jsonify({
-        "url": SUPABASE_URL,
-        "key": SUPABASE_ANON_KEY,
-        "available": bool(SUPABASE_URL and SUPABASE_ANON_KEY)
-    })
 
 # ── HEALTH ───────────────────────────────────────────────
 @app.route("/health")

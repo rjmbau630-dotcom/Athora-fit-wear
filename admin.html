@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Athora Fit — Admin</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -294,7 +293,6 @@ async function doLogin() {
     document.getElementById('login').classList.add('hide');
     document.getElementById('dash').classList.add('show');
     await loadAll();
-    initRealtime();
   } else {
     document.getElementById('login-err').textContent = '❌ Wrong PIN — try again';
     document.getElementById('pin').value = '';
@@ -365,29 +363,29 @@ function orderCard(o) {
   const items = JSON.parse(o.items_json || '[]');
   const date = (o.created_at || '').slice(0, 10);
   const b = {
-    pending: `<span class="badge b-p" onclick="updateStatus('${o.order_ref || o.ref}','paid')">⏳ PENDING — tap to mark PAID</span>`,
-    paid: `<span class="badge b-pa" onclick="updateStatus('${o.order_ref || o.ref}','packed')">✓ PAID — tap to mark PACKED</span>`,
-    packed: `<span class="badge b-pk" onclick="updateStatus('${o.order_ref || o.ref}','delivered')">📦 PACKED — tap to mark DELIVERED</span>`,
+    pending: `<span class="badge b-p" onclick="updateStatus(${o.id},'paid')">⏳ PENDING — tap to mark PAID</span>`,
+    paid: `<span class="badge b-pa" onclick="updateStatus(${o.id},'packed')">✓ PAID — tap to mark PACKED</span>`,
+    packed: `<span class="badge b-pk" onclick="updateStatus(${o.id},'delivered')">📦 PACKED — tap to mark DELIVERED</span>`,
     delivered: `<span class="badge b-d">🚚 DELIVERED</span>`
   }[o.status] || `<span class="badge b-p">⏳ PENDING</span>`;
   return `<div class="oc">
     <div style="flex:1;min-width:0;">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
         <div class="oc-id">#${o.id}</div>${b}
-        <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);">${o.order_ref || o.ref} · ${date}</span>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);">${date}</span>
       </div>
       <div class="oc-items">${items.map(i => i.name + (i.size ? ' (' + i.size + ')' : '')).join(', ')}</div>
-      <div class="oc-meta">👤 ${o.customer_name} &nbsp;|&nbsp; 📞 ${o.customer_phone}<br>📍 ${o.delivery_address || o.customer_address || ''} &nbsp;|&nbsp; 💳 ${o.mpesa_receipt || ''}</div>
+      <div class="oc-meta">👤 ${o.customer_name} &nbsp;|&nbsp; 📞 ${o.customer_phone}<br>📍 ${o.delivery_address || ''} &nbsp;|&nbsp; 💳 ${o.mpesa_receipt || ''}</div>
     </div>
     <div class="oc-right">
       <div class="oc-total">KES ${fmt(o.total)}</div>
-      <button class="btn btn-g btn-sm" onclick="showReceipt('${o.order_ref || o.ref}')">🧾 Receipt</button>
+      <button class="btn btn-g btn-sm" onclick="showReceipt(${o.id})">🧾 Receipt</button>
     </div>
   </div>`;
 }
-async function updateStatus(ref, status) {
-  const { ok } = await api(`/api/orders/${ref}/status`, 'POST', { status });
-  if (ok) { toast(`✅ ${ref} → ${status.toUpperCase()}`); await loadOrders(); renderOrdersList(); renderOverview(); }
+async function updateStatus(orderId, status) {
+  const { ok } = await api(`/api/orders/${orderId}/status`, 'POST', { status });
+  if (ok) { toast(`✅ Order #${orderId} → ${status.toUpperCase()}`); await loadOrders(); renderOrdersList(); renderOverview(); }
   else toast('❌ Failed to update status');
 }
 
@@ -464,17 +462,17 @@ async function addProduct() {
 }
 
 // RECEIPT
-function showReceipt(ref) {
-  const o = orders.find(x => (x.order_ref || x.ref) === ref); if (!o) return;
+function showReceipt(orderId) {
+  const o = orders.find(x => x.id === orderId); if (!o) return;
   const items = JSON.parse(o.items_json || '[]');
   document.getElementById('rb').innerHTML = `
     ${items.map(i => `<div class="rl"><span class="lbl">${i.name}${i.size ? ' (' + i.size + ')' : ''}</span><span class="val">KES ${fmt(i.price)}</span></div>`).join('')}
     <div class="rt"><span class="lbl">TOTAL</span><span class="val">KES ${fmt(o.total)}</span></div>
-    <div class="rl"><span class="lbl">Order Ref</span><span class="val" style="color:var(--accent);font-family:'Share Tech Mono',monospace;">${o.order_ref || o.ref}</span></div>
+    <div class="rl"><span class="lbl">Order #</span><span class="val" style="color:var(--accent);font-family:'Share Tech Mono',monospace;">${o.id}</span></div>
     <div class="rl"><span class="lbl">M-Pesa Code</span><span class="val" style="font-family:'Share Tech Mono',monospace;">${o.mpesa_receipt || ''}</span></div>
     <div class="rl"><span class="lbl">Customer</span><span class="val">${o.customer_name}</span></div>
     <div class="rl"><span class="lbl">Phone</span><span class="val">${o.customer_phone}</span></div>
-    <div class="rl"><span class="lbl">Deliver To</span><span class="val">${o.delivery_address || o.customer_address || ''}</span></div>
+    <div class="rl"><span class="lbl">Deliver To</span><span class="val">${o.delivery_address || ''}</span></div>
     <div class="rl"><span class="lbl">Status</span><span class="val">${o.status.toUpperCase()}</span></div>
     <div class="rl"><span class="lbl">Date</span><span class="val">${(o.created_at || '').slice(0, 10)}</span></div>`;
   document.getElementById('receipt-modal').classList.add('open');
@@ -482,60 +480,6 @@ function showReceipt(ref) {
 function closeReceipt() { document.getElementById('receipt-modal').classList.remove('open'); }
 
 // TOAST
-// ── SUPABASE REALTIME ──
-const SUPABASE_URL = 'https://ndipdrjjbegbanliwlxq.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5kaXBkcmpqYmVnYmFubGl3bHhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MjAwMDAwMDAwMH0.placeholder';
-
-async function initRealtime() {
-  // Get supabase config from server
-  try {
-    const res = await fetch('/api/realtime-config');
-    if (!res.ok) { startPollingFallback(); return; }
-    const cfg = await res.json();
-    if (!cfg.url || !cfg.key) { startPollingFallback(); return; }
-
-    const sb = supabase.createClient(cfg.url, cfg.key);
-    sb.channel('new-orders')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'orders'
-      }, async payload => {
-        toast('🔔 New order received!');
-        const ordTab = document.querySelectorAll('.tab-btn')[1];
-        if (ordTab) {
-          ordTab.style.background = 'var(--accent)';
-          ordTab.style.color = '#000';
-          setTimeout(() => { ordTab.style.background = ''; ordTab.style.color = ''; }, 2500);
-        }
-        await loadOrders();
-        renderOverview();
-      })
-      .subscribe(status => {
-        console.log('[Realtime]', status);
-        if (status === 'SUBSCRIBED') {
-          toast('🟢 Live updates active');
-        }
-      });
-  } catch(e) {
-    console.warn('[Realtime] Falling back to polling:', e.message);
-    startPollingFallback();
-  }
-}
-
-// Fallback: poll every 30s if realtime not available
-function startPollingFallback() {
-  console.log('[Realtime] Using 30s poll fallback');
-  setInterval(async () => {
-    const prev = orders.length;
-    await loadOrders();
-    if (orders.length > prev) {
-      toast('🔔 New order received!');
-      renderOverview();
-    }
-  }, 30000);
-}
-
 let _tt;
 function toast(msg) {
   const t = document.getElementById('toast');
