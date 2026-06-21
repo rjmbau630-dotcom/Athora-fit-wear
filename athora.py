@@ -257,7 +257,7 @@ def checkout():
         phone = d["phone"].strip()
 
         # Save order immediately as pending
-       q_run(
+        q_run(
           """INSERT INTO orders
              (id, order_ref, customer_name, customer_phone, delivery_address,
              payment_method, mpesa_phone, items_json,
