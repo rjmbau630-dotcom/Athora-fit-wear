@@ -944,6 +944,26 @@ function initPWA() {
 }
 function installPWA() { if (!deferredPrompt) return; deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById('pwa-bar').classList.remove('show'); }); }
 function dismissPWA() { document.getElementById('pwa-bar').classList.remove('show'); localStorage.setItem('pwa-off', '1'); }
+async function trackOrder(orderId) {
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("id", orderId)
+    .single();
+
+  if (error || !data) {
+    alert("Order not found");
+    return;
+  }
+
+  alert(
+    `Order #${data.id}\n` +
+    `Status: ${data.status || "Pending"}\n` +
+    `Payment: ${data.payment_status || "Pending"}`
+  );
+}
+
+window.trackOrder = trackOrder;
 </script>
 </body>
 </html>
