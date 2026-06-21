@@ -25,8 +25,8 @@ MPESA_CALLBACK_URL    = os.environ.get("MPESA_CALLBACK_URL",    "https://athora-
 MPESA_BASE            = "https://api.safaricom.co.ke" if MPESA_ENV == "production" else "https://sandbox.safaricom.co.ke"
 
 # Supabase — for realtime notifications
-SUPABASE_URL          = os.environ.get("SUPABASE_URL",      "")
-SUPABASE_ANON_KEY     = os.environ.get("SUPABASE_ANON_KEY", "")
+SUPABASE_URL          = os.environ.get("https://ndipdrjjbegbanliwlxq.supabase.co",      "")
+SUPABASE_ANON_KEY     = os.environ.get("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5kaXBkcmpqYmVnYmFubGl3bHhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0OTgzMDgsImV4cCI6MjA4OTA3NDMwOH0.Er-4MwROgCGysj35ynMO3bPEjoty-g-iN5K_m03bgdo", "")
 
 # ── APP ──────────────────────────────────────────────────
 app = Flask(__name__)
