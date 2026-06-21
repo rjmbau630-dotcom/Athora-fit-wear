@@ -109,7 +109,11 @@ nav{position:sticky;top:0;z-index:200;background:rgba(10,10,10,.95);backdrop-fil
 .sz:hover{border-color:var(--accent);color:var(--accent);}
 .sz.on{background:var(--accent);color:#000;border-color:var(--accent);}
 .prod-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.prod-price-wrap{}
+.prod-price-wrap{
+  display: flex;
+  align-items: center;
+  gap: 8px; 
+}
 .prod-price-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;display:block;margin-bottom:2px;}
 .prod-price{font-family:'Share Tech Mono',monospace;font-size:18px;color:var(--accent);}
 .qty-row{display:flex;align-items:center;gap:6px;}
@@ -631,7 +635,7 @@ function renderShop() {
               <input class="qty-num" id="qty-${p.id}" value="1" readonly>
               <button class="qty-btn" onclick="changeQty('${p.id}',1)">+</button>
             </div>
-            <button class="add-btn" id="add-${p.id}" onclick="addToCart(${p.id})"${p.outOfStock ? ' disabled' : ''}>+Add</button>
+            <button class="add-btn" id="add-${p.id}" onclick="addToCart(`${p.id}`)">${p.outOfStock ? ' disabled' : ''}>+Add</button>
           </div>
         </div>
       </div>
@@ -692,7 +696,7 @@ function renderCart() {
       <div class="cart-info">
         <div class="cart-name">${p.name}</div>
         <div class="cart-meta">${p.category}${item.size ? ' · ' + item.size : ''}</div>
-        <div class="cart-actions"><button class="rm-btn" onclick="removeFromCart(${i})">✕ Remove</button></div>
+        <div class="cart-actions"><button class="rm-btn" onclick="removeFromCart(`${i}`)">✕ Remove</button></div>
       </div>
       <div class="cart-price-col">
         <div class="cart-price">KES ${fmt(p.price)}</div>
@@ -811,8 +815,9 @@ function showStkFallback(ref, total, reason) {
       <button class="btn btn-primary btn-lg" onclick="showTrackSuccess('${ref}')">✓ I've Paid</button>
       <a href="https://wa.me/254724357210?text=Hi!%20I%20placed%20order%20${ref}%20and%20paid%20KES%20${total}%20via%20Paybill%20516600" target="_blank" class="btn btn-lg" style="background:var(--wa);color:#fff;border:none;text-decoration:none;">💬 WhatsApp</a>
     </div>`;
-}
-
+  }
+let currentOrder = null;
+let cart = [];
 function showTrackSuccess(ref) {
   currentOrder = currentOrder || { ref, items: [], total: 0, name: '', phone: '', addr: '', mpesa: '', date: new Date() };
   cart = []; updateCartCount(); loadStats();
@@ -824,11 +829,17 @@ function startPolling(ref) {
   const maxAttempts = 40; // 2 minutes (40 × 3s)
   const timerEl = document.getElementById('pay-timer');
 
-  pollTimer = setInterval(async () => {
+  let pollTimer = setInterval(async () => {
     attempts++;
     const remaining = (maxAttempts - attempts) * 3;
-    timerEl.textContent = `Waiting for confirmation... (${remaining}s)`;
-
+    if (timerEl) {
+      timerEl.textContent = `Waiting for confirmation... (${remaining}s)`;
+    }
+    if (attempts >=maxAttempts) {
+      clearInterval(pollTimer);
+      if (timerEl) timerEl.textContent = "Verification timed out.";
+      return;
+    }
     try {
       const { ok, data } = await api('/api/order-status/' + ref);
       if (ok) {
@@ -845,7 +856,9 @@ function startPolling(ref) {
           showPayTimeout(ref);
         }
       }
-    } catch (e) { console.error('Poll error:', e); }
+    } catch (error) {
+      console.error('Polling error:', error); 
+    }
   }, 3000);
 }
 
@@ -945,23 +958,19 @@ function dismissPWA() { document.getElementById('pwa-bar').classList.remove('sho
 const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co";
 const SUPABASE_ANON_KEY = "YOUR_PUBLIC_ANON_KEY";
 const supabase = window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-</script>
+<script>
 async function trackOrder(orderId) {
-  const { data, error } = await supabaseclient 
-    .from("orders")
-    .select("*")
-    .eq("id", orderId)
-    .single();
+  const res = await api(`/api/orders/${orderId}`);
 
-  if (error || !data) {
+  if (res.error) {
     alert("Order not found");
     return;
   }
 
   alert(
-    `Order #${data.id}\n` +
-    `Status: ${data.status || "Pending"}\n` +
-    `Payment: ${data.payment_status || "Pending"}`
+    `Order #${res.id}\n` +
+    `Status: ${res.status || 'Pending'}\n` +
+    `Payment: ${res.payment_status || 'Pending'}`
   );
 }
 
