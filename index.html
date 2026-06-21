@@ -910,13 +910,13 @@ function showPayTimeout(orderId) {
 }
 
 function resetCheckoutForm() {
-  document.getElementById('co-form').style.display = 'block';
-  document.getElementById('pay-status').style.display = 'none';
+  document.getElementById('pay-status')?.style &&
+  (document.getElementById('pay-status').style.display = 'none');
 
   const btn = document.getElementById('place-btn');
   if (btn) {
-    btn.textContent = '📲 PAY WITH M-PESA';
     btn.disabled = false;
+    btn.textContent = '📲 PAY WITH M-PESA';
   }
 }
 
