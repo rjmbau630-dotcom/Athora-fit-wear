@@ -363,9 +363,9 @@ function orderCard(o) {
   const items = JSON.parse(o.items_json || '[]');
   const date = (o.created_at || '').slice(0, 10);
   const b = {
-    pending: `<span class="badge b-p" onclick="updateStatus(${o.id},'paid')">⏳ PENDING — tap to mark PAID</span>`,
-    paid: `<span class="badge b-pa" onclick="updateStatus(${o.id},'packed')">✓ PAID — tap to mark PACKED</span>`,
-    packed: `<span class="badge b-pk" onclick="updateStatus(${o.id},'delivered')">📦 PACKED — tap to mark DELIVERED</span>`,
+    pending: `<span class="badge b-p" onclick="updateStatus('${o.id}'','paid')">⏳ PENDING — tap to mark PAID</span>`,
+    paid: `<span class="badge b-pa" onclick="updateStatus('${o.id}'','packed')">✓ PAID — tap to mark PACKED</span>`,
+    packed: `<span class="badge b-pk" onclick="updateStatus('${o.id}'','delivered')">📦 PACKED — tap to mark DELIVERED</span>`,
     delivered: `<span class="badge b-d">🚚 DELIVERED</span>`
   }[o.status] || `<span class="badge b-p">⏳ PENDING</span>`;
   return `<div class="oc">
