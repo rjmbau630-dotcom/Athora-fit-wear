@@ -253,7 +253,7 @@ def checkout():
         order_id = q_run(
             """INSERT INTO orders
                (customer_name, customer_phone, delivery_address,
-                items_json, subtotal, delivery_cost, total, mpesa_phone,order_code)
+                items_json, subtotal, delivery_cost, total, mpesa_phone)
                VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
                RETURNING id""",
             (d["name"].strip(), phone, d["address"].strip(),
