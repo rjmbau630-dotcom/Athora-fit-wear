@@ -254,7 +254,7 @@ def checkout():
             """INSERT INTO orders
                (customer_name, customer_phone, delivery_address,
                 items_json, subtotal, delivery_cost, total, mpesa_phone,order_code)
-               VALUES (%1,%2,%3,%4,%5,%6,%7,%8)
+               VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
                RETURNING id""",
             (d["name"].strip(), phone, d["address"].strip(),
              json.dumps(items), subtotal, delivery_cost, total, phone)
