@@ -4,8 +4,8 @@ Flask + PostgreSQL + Order Tracking
 """
 import os, json, secrets, base64, logging
 from datetime import datetime
-from flask import Flask, request, session, jsonify, Response
-import requests as http
+from flask import Flask, request, session, jsonify, Response # pyright: ignore[reportMissingImports]
+import requests as http # type: ignore
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("athora")
@@ -30,9 +30,9 @@ app.secret_key = FLASK_SECRET
 
 # ── DATABASE ─────────────────────────────────────────────
 def get_db():
-    import psycopg2
-    from psycopg2.extras import RealDictCursor
-    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor, connect_timeout=10)
+    import psycopg2 # type: ignore
+    import psycopg2.extras # type: ignore
+    return psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor, connect_timeout=10)
 
 def init_db():
     with get_db() as conn:
@@ -253,8 +253,8 @@ def checkout():
         order_id = q_run(
             """INSERT INTO orders
                (customer_name, customer_phone, delivery_address,
-                items_json, subtotal, delivery_cost, total, mpesa_phone)
-               VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+                items_json, subtotal, delivery_cost, total, mpesa_phone,order_code)
+               VALUES (%1,%2,%3,%4,%5,%6,%7,%8)
                RETURNING id""",
             (d["name"].strip(), phone, d["address"].strip(),
              json.dumps(items), subtotal, delivery_cost, total, phone)
@@ -325,19 +325,16 @@ def mpesa_callback():
     return jsonify({"ResultCode": 0, "ResultDescription": "Success"}), 200
 
 # ── ORDER STATUS POLLING ─────────────────────────────────
-@app.route("/api/order-status/<order_id>")
+@app.route("/api/order-status/<int:order_id>")
 def order_status(order_id):
     try:
         o = q_one(
             "SELECT id, status, mpesa_receipt, total, paid_at, created_at FROM orders WHERE id=%s",
             (order_id,)
         )
-
         if not o:
             return jsonify({"error": "Order not found"}), 404
-
         return jsonify(o)
-
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
