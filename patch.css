@@ -1,0 +1,267 @@
+/* ============================================================
+   ATHORA FIT WEAR — Patch Styles
+   Add to your existing CSS file (or a new patch.css)
+   ============================================================ */
+
+/* ── CSS Custom Properties (theme-able via JS / DB) ───────── */
+:root {
+  --color-primary:    #000000;
+  --color-secondary:  #ffffff;
+  --color-accent:     #f5a623;
+  --color-button:     #000000;
+  --color-background: #ffffff;
+  --font-family:      'Inter', sans-serif;
+
+  /* Derived */
+  --color-primary-light: color-mix(in srgb, var(--color-primary) 15%, white);
+  --radius: 10px;
+  --shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+
+body { font-family: var(--font-family); background: var(--color-background); }
+
+/* Apply primary to key elements */
+a, .nav-link            { color: var(--color-primary); }
+button.primary, .btn-primary {
+  background: var(--color-button);
+  color: var(--color-secondary);
+  border: none;
+  border-radius: var(--radius);
+  padding: .6rem 1.2rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity .2s;
+}
+button.primary:hover { opacity: .85; }
+.accent { color: var(--color-accent); }
+
+/* ── ORDER TRACKING TIMELINE ─────────────────────────────── */
+#tracking-result { margin-top: 1rem; }
+
+.tracking-result {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.track-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: .75rem;
+}
+.track-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0;
+}
+.track-date { font-size: .8rem; color: #6b7280; }
+
+.track-badges { display: flex; gap: .5rem; margin-bottom: .75rem; flex-wrap: wrap; }
+.badge {
+  font-size: .75rem;
+  font-weight: 600;
+  padding: .25rem .65rem;
+  border-radius: 999px;
+}
+.badge.paid, .badge.delivered    { background: #d1fae5; color: #065f46; }
+.badge.pending                   { background: #fef3c7; color: #92400e; }
+.badge.shipped                   { background: #dbeafe; color: #1e40af; }
+.badge.packed                    { background: #ede9fe; color: #5b21b6; }
+.badge.cancelled, .badge.refunded{ background: #fee2e2; color: #991b1b; }
+
+.eta { font-size: .85rem; color: #374151; margin: .25rem 0 1rem; }
+
+/* Timeline */
+.tracking-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin: 1rem 0;
+  position: relative;
+  padding-left: 2rem;
+}
+.tracking-timeline::before {
+  content: '';
+  position: absolute;
+  left: .85rem;
+  top: .4rem;
+  bottom: .4rem;
+  width: 2px;
+  background: #e5e7eb;
+}
+
+.tracking-step {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  position: relative;
+}
+.step-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  position: absolute;
+  left: -2.1rem;
+  background: #e5e7eb;
+  color: #9ca3af;
+}
+.step-label { font-size: .85rem; color: #9ca3af; }
+
+.tracking-step.step-done  .step-icon { background: var(--color-primary); color: var(--color-secondary); }
+.tracking-step.step-done  .step-label { color: #111827; font-weight: 600; }
+.tracking-step.step-current .step-icon { background: var(--color-accent); color: #fff; }
+.tracking-step.step-current .step-label { color: #111827; font-weight: 700; }
+
+/* Items list */
+.track-items h4 { font-size: .85rem; color: #6b7280; margin: 1rem 0 .4rem; text-transform: uppercase; letter-spacing: .05em; }
+.track-item     { display: flex; justify-content: space-between; font-size: .85rem; padding: .2rem 0; border-bottom: 1px solid #f3f4f6; }
+.track-total    { text-align: right; margin-top: .75rem; font-size: .95rem; }
+
+.tracking-loading, .tracking-error {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+  font-size: .9rem;
+}
+.tracking-error { color: #dc2626; }
+
+
+/* ── ADMIN DASHBOARD STATS ───────────────────────────────── */
+#dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.stat-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius);
+  padding: 1.1rem 1rem;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.stat-label { display: block; font-size: .75rem; color: #6b7280; text-transform: uppercase; letter-spacing: .05em; margin-bottom: .3rem; }
+.stat-value { display: block; font-size: 1.6rem; font-weight: 800; color: var(--color-primary); }
+.stat-card.stat-warn    .stat-value { color: #d97706; }
+.stat-card.stat-success .stat-value { color: #059669; }
+.stat-card.stat-danger  .stat-value { color: #dc2626; }
+
+
+/* ── ADMIN ORDER CARD ────────────────────────────────────── */
+.order-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+}
+.order-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-bottom: .75rem;
+}
+.order-card-header h4 { margin: 0; font-size: 1rem; font-weight: 700; }
+.order-meta   { font-size: .82rem; color: #6b7280; margin-bottom: .1rem; }
+.order-amount { font-size: 1rem; font-weight: 700; color: var(--color-primary); }
+
+.order-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin-top: .75rem;
+}
+.order-actions button {
+  font-size: .78rem;
+  padding: .35rem .75rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity .15s;
+}
+.order-actions button:hover   { opacity: .8; }
+.order-actions button:disabled{ opacity: .5; cursor: not-allowed; }
+.btn-pay     { background: #d1fae5; color: #065f46; }
+.btn-pack    { background: #ede9fe; color: #5b21b6; }
+.btn-ship    { background: #dbeafe; color: #1e40af; }
+.btn-deliver { background: #059669; color: #fff; }
+.btn-cancel  { background: #fee2e2; color: #991b1b; }
+.btn-print   { background: #f3f4f6; color: #374151; }
+.btn-refund  { background: #fef3c7; color: #92400e; }
+
+
+/* ── THEME SETTINGS FORM ─────────────────────────────────── */
+#theme-settings-form {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  max-width: 560px;
+}
+#theme-settings-form h3 { margin: 0 0 1.25rem; font-size: 1.1rem; }
+
+.theme-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: .85rem;
+}
+.theme-row label { flex: 1; font-size: .88rem; color: #374151; font-weight: 500; }
+.theme-row input[type="color"] {
+  width: 3rem; height: 2rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 0;
+}
+.theme-row input[type="text"],
+.theme-row input[type="url"],
+.theme-row textarea,
+.theme-row select {
+  flex: 2;
+  padding: .45rem .7rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: .88rem;
+  font-family: inherit;
+}
+#theme-settings-form [type="submit"] {
+  margin-top: 1rem;
+  width: 100%;
+  padding: .7rem;
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+#theme-settings-form [type="submit"]:hover { opacity: .85; }
+
+.banner-preview {
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  text-align: center;
+  padding: .45rem;
+  font-size: .82rem;
+  border-radius: 6px;
+  margin-top: .5rem;
+  letter-spacing: .02em;
+}

@@ -1,0 +1,186 @@
+<!-- ============================================================
+     ATHORA FIT WEAR — HTML Snippets
+     Copy-paste each section into the right place in your
+     existing HTML. See comments for where each one goes.
+     ============================================================ -->
+
+
+<!-- ── 1. BANNER (replace existing banner <div>/<p>) ─────── -->
+<!-- Add id="site-banner" to whatever element holds the top bar text -->
+<div class="site-banner" id="site-banner">
+  🚚 Free Delivery on orders over KES 15,000 · 💪 Train Hard. Look Harder.
+</div>
+
+
+<!-- ── 2. TRACK ORDER PANEL (replace existing tracking panel) -->
+<section id="track-order-panel" class="panel">
+  <h2>Track Your Order</h2>
+  <p style="color:#6b7280;font-size:.9rem;margin-bottom:1rem;">
+    Enter your order code (e.g. <strong>ATH-OR-0001</strong>) or phone number.
+  </p>
+  <form id="tracking-form" style="display:flex;gap:.5rem;flex-wrap:wrap;">
+    <input
+      id="tracking-input"
+      type="text"
+      placeholder="ATH-OR-0001 or 07XXXXXXXX"
+      style="flex:1;min-width:200px;padding:.6rem .9rem;border:1px solid #d1d5db;border-radius:8px;font-size:.95rem;"
+      autocomplete="off"
+    />
+    <button type="submit" id="tracking-btn" class="primary">
+      Track My Order
+    </button>
+  </form>
+  <div id="tracking-result"></div>
+</section>
+
+
+<!-- ── 3. ADMIN — DASHBOARD STATS (top of admin page) ───── -->
+<div id="dashboard-stats">
+  <!-- Populated by JS: loadDashboardStats() -->
+  <div class="stat-card"><span class="stat-label">Loading…</span></div>
+</div>
+
+
+<!-- ── 4. ADMIN — EXAMPLE ORDER CARD (use this as your template
+           when rendering order cards in JS / your template engine) -->
+<!-- 
+  Replace your existing order card HTML with this structure.
+  data-order-id must equal the actual DB id.
+  .pay-status and .del-status are updated live by JS.
+-->
+<div class="order-card" data-order-id="{{order.id}}">
+  <div class="order-card-header">
+    <div>
+      <h4>{{order.order_code}}</h4>
+      <p class="order-meta">👤 {{order.customer_name}}</p>
+      <p class="order-meta">📞 {{order.phone}}</p>
+      <p class="order-meta">📅 {{order.created_at | date}}</p>
+    </div>
+    <div style="text-align:right;">
+      <p class="order-amount">KES {{order.total | comma}}</p>
+      <div class="track-badges" style="justify-content:flex-end;margin-top:.4rem;">
+        <span class="badge pay-status {{order.payment_status | lower}}">
+          💳 <span class="pay-status">{{order.payment_status}}</span>
+        </span>
+        <span class="badge del-status {{order.delivery_status | lower}}">
+          📦 <span class="del-status">{{order.delivery_status}}</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="order-actions">
+    <button class="btn-pay"     data-action="mark-paid">✓ Mark Paid</button>
+    <button class="btn-pack"    data-action="mark-packed">📦 Packed</button>
+    <button class="btn-ship"    data-action="mark-shipped">🚚 Shipped</button>
+    <button class="btn-deliver" data-action="mark-delivered">✅ Delivered</button>
+    <button class="btn-cancel"  data-action="mark-cancelled">❌ Cancel</button>
+    <button class="btn-refund"  data-action="mark-refunded">↩ Refund</button>
+    <button class="btn-print"   onclick="window.print()">🖨 Print</button>
+  </div>
+</div>
+
+
+<!-- ── 5. ADMIN — THEME SETTINGS PANEL ───────────────────── -->
+<!-- Add this as a new tab/section in your admin panel -->
+<section id="theme-settings-section">
+  <h2 style="margin-bottom:1.25rem;">🎨 Theme Settings</h2>
+
+  <form id="theme-settings-form">
+    <h3>Colors</h3>
+
+    <div class="theme-row">
+      <label>Primary Color</label>
+      <input type="color" name="primary_color" value="#000000" />
+      <input type="text"  name="primary_color_hex" placeholder="#000000"
+             style="width:90px;flex:none;"
+             oninput="this.previousElementSibling.value=this.value" />
+    </div>
+
+    <div class="theme-row">
+      <label>Secondary Color</label>
+      <input type="color" name="secondary_color" value="#ffffff" />
+      <input type="text" name="secondary_color_hex" placeholder="#ffffff"
+             style="width:90px;flex:none;"
+             oninput="this.previousElementSibling.value=this.value" />
+    </div>
+
+    <div class="theme-row">
+      <label>Accent Color</label>
+      <input type="color" name="accent_color" value="#f5a623" />
+      <input type="text" name="accent_color_hex" placeholder="#f5a623"
+             style="width:90px;flex:none;"
+             oninput="this.previousElementSibling.value=this.value" />
+    </div>
+
+    <div class="theme-row">
+      <label>Button Color</label>
+      <input type="color" name="button_color" value="#000000" />
+      <input type="text" name="button_color_hex" placeholder="#000000"
+             style="width:90px;flex:none;"
+             oninput="this.previousElementSibling.value=this.value" />
+    </div>
+
+    <div class="theme-row">
+      <label>Background Color</label>
+      <input type="color" name="background_color" value="#ffffff" />
+      <input type="text" name="background_color_hex" placeholder="#ffffff"
+             style="width:90px;flex:none;"
+             oninput="this.previousElementSibling.value=this.value" />
+    </div>
+
+    <h3 style="margin-top:1.25rem;">Content</h3>
+
+    <div class="theme-row">
+      <label>Logo URL</label>
+      <input type="url" name="logo_url" placeholder="https://…/logo.png" />
+    </div>
+
+    <div class="theme-row">
+      <label>Hero Banner URL</label>
+      <input type="url" name="hero_banner_url" placeholder="https://…/banner.jpg" />
+    </div>
+
+    <div class="theme-row" style="align-items:flex-start;">
+      <label style="padding-top:.4rem;">Banner Message</label>
+      <div style="flex:2;">
+        <textarea name="banner_message" rows="2"
+          style="width:100%;padding:.45rem .7rem;border:1px solid #d1d5db;border-radius:6px;font-size:.88rem;resize:vertical;"
+          oninput="document.getElementById('banner-preview-text').textContent=this.value"
+          placeholder="🚚 Free Delivery on orders over KES 15,000 · 💪 Train Hard. Look Harder."></textarea>
+        <div class="banner-preview" id="banner-preview-text">
+          🚚 Free Delivery on orders over KES 15,000 · 💪 Train Hard. Look Harder.
+        </div>
+      </div>
+    </div>
+
+    <div class="theme-row">
+      <label>Font</label>
+      <select name="font_family">
+        <option value="Inter, sans-serif">Inter (default)</option>
+        <option value="'Poppins', sans-serif">Poppins</option>
+        <option value="'Montserrat', sans-serif">Montserrat</option>
+        <option value="'Raleway', sans-serif">Raleway</option>
+        <option value="'DM Sans', sans-serif">DM Sans</option>
+        <option value="'Space Grotesk', sans-serif">Space Grotesk</option>
+      </select>
+    </div>
+
+    <button type="submit">Save Settings</button>
+  </form>
+</section>
+
+
+<!-- ── 6. HOW TO WIRE IN (add to your <head> and end of <body>) -->
+<!--
+  In <head>:
+    <link rel="stylesheet" href="/patch.css" />
+
+  Before </body>:
+    <script src="/patch.js"></script>
+
+  Make sure your banner element has id="site-banner"
+  Make sure your logo <img> has id="site-logo"
+  Make sure your hero banner wrapper has id="hero-banner"
+  Make sure your admin orders container has id="admin-orders-list"
+-->
