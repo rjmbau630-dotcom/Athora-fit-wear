@@ -816,7 +816,7 @@ async function placeOrder() {
 
     if (data.checkout_id) {
       // STK push worked — poll for payment
-      startPolling(data.order_id);
+      startPolling(data.order_ref);
     } else {
       // STK failed — show manual payment fallback
       showStkFallback(data.order_id, data.total, data.stk_error);
