@@ -379,7 +379,7 @@ function orderCard(o) {
     </div>
     <div class="oc-right">
       <div class="oc-total">KES ${fmt(o.total)}</div>
-      <button class="btn btn-g btn-sm" onclick="showReceipt(${o.id})">🧾 Receipt</button>
+      <button class="btn btn-g btn-sm" onclick="showReceipt('${o.order_ref}')">🧾 Receipt</button>
     </div>
   </div>`;
 }
