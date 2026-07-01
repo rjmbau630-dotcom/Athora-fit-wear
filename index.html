@@ -382,7 +382,6 @@ footer{border-top:1px solid var(--border);padding:28px 40px;margin-top:60px;disp
           <button class="btn btn-ghost btn-full" onclick="go('cart')">← Back to Cart</button>
         </div>
       </div>
-      <!-- PAYMENT STATUS SCREEN -->
       <div id="pay-status" style="display:none;text-align:center;padding:40px 20px;">
         <div id="pay-spinner" style="width:60px;height:60px;border:3px solid #2a2a2a;border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;"></div>
         <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:3px;margin-bottom:10px;">CHECK YOUR PHONE 📱</div>
@@ -923,21 +922,16 @@ function resetCheckoutForm() {
   }
 
   const payStatus = document.getElementById('pay-status');
-  if (payStatus) {
-    payStatus.style.display = 'none';
-    payStatus.innerHTML = '';
-  }
 
-  const actions = document.getElementById('co-form-actions');
-  if (actions) {
-    actions.style.display = 'flex';   // or 'block' depending on your layout
-  }
+  // Restore the original waiting screen
+  payStatus.innerHTML = defaultPayStatus;
+  payStatus.style.display = 'none';
+
+  document.getElementById('co-form-actions').style.display = 'flex';
 
   const btn = document.getElementById('place-btn');
-  if (btn) {
-    btn.disabled = false;
-    btn.textContent = '📲 PAY WITH M-PESA';
-  }
+  btn.disabled = false;
+  btn.textContent = '📲 PAY WITH M-PESA';
 }
 function showSuccess() {
   buildReceipt(currentOrder);
