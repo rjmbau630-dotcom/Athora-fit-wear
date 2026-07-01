@@ -748,17 +748,19 @@ let pollTimer = null;
 async function trackOrder() {
   const input = document.getElementById('track-input');
   const resultEl = document.getElementById('track-result');
-  const orderId = input.value.trim();
+  const orderRef = input.value.trim().toUpperCase();
 
-  if (!orderId || isNaN(orderId)) {
-    toast('⚠ Enter a valid order number');
+if (!orderRef) {
+    toast('⚠ Enter your order reference');
     return;
-  }
+}
 
-  resultEl.innerHTML = `<div style="text-align:center;color:var(--muted2);padding:24px;">Looking up order #${orderId}...</div>`;
+resultEl.innerHTML = `
+<div style="text-align:center;color:var(--muted2);padding:24px;">
+Looking up order ${orderRef}...
+</div>`;
 
-  const { ok, data } = await api('/api/track/' + orderId);
-
+const { ok, data } = await api('/api/track/' + encodeURIComponent(orderRef));
   if (!ok || data.error) {
     resultEl.innerHTML = `<div style="text-align:center;color:var(--red);padding:24px;">${data?.error || 'Order not found. Check your order number.'}</div>`;
     return;
