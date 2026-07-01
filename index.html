@@ -699,7 +699,6 @@ function addToCart(id) {
   for (let i = 0; i < qty; i++) cart.push({ id, size: size || p.sizes || '' });
   updateCartCount();
   const toastMsg = `✅ ${qty}× ${p.name}${size ? ' (' + size + ')' : ''} added`;
-  toast(toastMsg);
   const btn = document.getElementById('add-' + id);
   if (btn) { btn.textContent = '✓ Added'; btn.classList.add('done'); setTimeout(() => { btn.textContent = '+Add'; btn.classList.remove('done'); }, 1400); }
   if (qtyEl) qtyEl.value = 1;
