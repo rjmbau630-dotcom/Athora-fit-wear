@@ -917,8 +917,21 @@ function showPayTimeout(orderId) {
 }
 
 function resetCheckoutForm() {
-  document.getElementById('pay-status')?.style &&
-  (document.getElementById('pay-status').style.display = 'none');
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+
+  const payStatus = document.getElementById('pay-status');
+  if (payStatus) {
+    payStatus.style.display = 'none';
+    payStatus.innerHTML = '';
+  }
+
+  const actions = document.getElementById('co-form-actions');
+  if (actions) {
+    actions.style.display = 'flex';   // or 'block' depending on your layout
+  }
 
   const btn = document.getElementById('place-btn');
   if (btn) {
@@ -926,7 +939,6 @@ function resetCheckoutForm() {
     btn.textContent = '📲 PAY WITH M-PESA';
   }
 }
-
 function showSuccess() {
   buildReceipt(currentOrder);
   document.getElementById('co-wrap').innerHTML = `
