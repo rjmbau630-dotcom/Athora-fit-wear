@@ -1050,11 +1050,20 @@ function closeReceipt() { document.getElementById('receipt-modal').classList.rem
 // ══════════════════════════════════════
 //  TOAST
 // ══════════════════════════════════════
-let _tt;
+let _tt = null;
+
 function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout();_tt = setTimeout(() => t.classList.remove('show'), 2800);
+    clearTimeout(_tt);
+
+    const t = document.getElementById('toast');
+    if (!t) return;
+
+    t.textContent = msg;
+    t.classList.add('show');
+
+    _tt = setTimeout(() => {
+        t.classList.remove('show');
+    }, 2500);
 }
 
 // ══════════════════════════════════════
