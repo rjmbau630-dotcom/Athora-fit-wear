@@ -527,8 +527,12 @@ window.addEventListener('load', async () => {
   await loadProducts();
   await loadStats();
   // PWA
-function name(params) {
-} initPWA();
+function initPWA() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+}
+
   // PIN input enter key
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeReceipt(); });
 });
