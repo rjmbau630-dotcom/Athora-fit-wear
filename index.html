@@ -1072,6 +1072,7 @@ function initPWA() {
 }
 function installPWA() { if (!deferredPrompt) return; deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById('pwa-bar').classList.remove('show'); }); }
 function dismissPWA() { document.getElementById('pwa-bar').classList.remove('show'); localStorage.setItem('pwa-off', '1'); }
+}
 </script>
 </body>
 </html>
