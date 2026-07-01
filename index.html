@@ -884,7 +884,7 @@ async function placeOrder() {
   btn.disabled = false;
 }
 
-function showStkFallback(orderId, total, reason) {
+function showStkFallback(orderREF, total, reason) {
   document.getElementById('pay-status').innerHTML = `
     <div style="font-size:48px;margin-bottom:16px;">📲</div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:10px;">ORDER SAVED!</div>
