@@ -383,11 +383,35 @@ footer{border-top:1px solid var(--border);padding:28px 40px;margin-top:60px;disp
         </div>
       </div>
       <div id="pay-status" style="display:none;text-align:center;padding:40px 20px;">
-        <div id="pay-spinner" style="width:60px;height:60px;border:3px solid #2a2a2a;border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;"></div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:3px;margin-bottom:10px;">CHECK YOUR PHONE 📱</div>
-        <div style="color:var(--muted2);font-size:14px;line-height:1.8;margin-bottom:16px;">An M-Pesa PIN prompt has been sent to your phone.<br>Enter your M-Pesa PIN to complete payment.</div>
-        <div id="pay-timer" style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);margin-top:8px;letter-spacing:1px;"></div>
-        <div id="pay-ref" style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent);margin-top:8px;letter-spacing:2px;"></div>
+
+  <!-- Waiting Screen -->
+  <div id="pay-waiting">
+    <div id="pay-spinner"
+        style="width:60px;height:60px;border:3px solid #2a2a2a;border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;">
+    </div>
+
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:3px;margin-bottom:10px;">
+      CHECK YOUR PHONE 📱
+    </div>
+
+    <div style="color:var(--muted2);font-size:14px;line-height:1.8;margin-bottom:16px;">
+      An M-Pesa PIN prompt has been sent to your phone.<br>
+      Enter your M-Pesa PIN to complete payment.
+    </div>
+
+    <div id="pay-timer"
+        style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);margin-top:8px;letter-spacing:1px;">
+    </div>
+
+    <div id="pay-ref"
+        style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent);margin-top:8px;letter-spacing:2px;">
+    </div>
+  </div>
+
+  <!-- Dynamic Messages -->
+  <div id="pay-message" style="display:none;"></div>
+
+</div>
       </div>
     </div>
   </div>
@@ -802,35 +826,57 @@ async function placeOrder() {
   });
 
   if (ok && data.success) {
-    // Show waiting screen
-    document.getElementById('co-form-actions').style.display = 'none';
-    document.getElementById('pay-status').style.display = 'block';
-    document.getElementById('pay-ref').textContent = 'Order ' + data.order_ref;
-    toast('📲 M-Pesa PIN prompt sent! Check your phone.');
 
-    localStorage.setItem('lastOrderId', data.order_ref);
+  // Hide checkout buttons
+  document.getElementById('co-form-actions').style.display = 'none';
 
-    // Build order object for receipt
-    currentOrder = {
-      id: data.order_ref, total: data.total, name, phone, addr, mpesa: '',
-      items: cart.map(item => {
-        const p = products.find(x => x.id === item.id);
-        return { name: p?.name, price: p?.price, size: item.size, category: p?.category };
-      }).filter(x => x.name),
-      date: new Date()
-    };
+  // Show payment section
+  document.getElementById('pay-status').style.display = 'block';
 
-    if (data.checkout_id) {
-      // STK push worked — poll for payment
-      startPolling(data.order_ref);
-    } else {
-      // STK failed — show manual payment fallback
-      showStkFallback(data.order_ref, data.total, data.stk_error);
-    }
+  // Always reset payment UI
+  document.getElementById('pay-waiting').style.display = 'block';
+  document.getElementById('pay-message').style.display = 'none';
+  document.getElementById('pay-message').innerHTML = '';
+
+  // Reset timer and reference
+  document.getElementById('pay-timer').textContent = '';
+  document.getElementById('pay-ref').textContent = 'Order ' + data.order_ref;
+
+  toast('📲 M-Pesa PIN prompt sent! Check your phone.');
+
+  localStorage.setItem('lastOrderRef', data.order_ref);
+
+  // Build order object
+  currentOrder = {
+    id: data.order_id,              // optional database UUID
+    order_ref: data.order_ref,      // customer reference
+    total: data.total,
+    name,
+    phone,
+    addr,
+    mpesa: '',
+    items: cart.map(item => {
+      const p = products.find(x => x.id === item.id);
+      return {
+        name: p?.name,
+        price: p?.price,
+        size: item.size,
+        category: p?.category
+      };
+    }).filter(x => x.name),
+    date: new Date()
+  };
+
+  if (data.checkout_id) {
+    startPolling(data.order_ref);
   } else {
-    toast('❌ ' + (error || data?.error || 'Failed to place order'));
-    btn.textContent = '📲 PAY WITH M-PESA'; btn.disabled = false;
+    showStkFallback(data.order_ref, data.total, data.stk_error);
   }
+
+} else {
+  toast('❌ ' + (error || data?.error || 'Failed to place order'));
+  btn.textContent = '📲 PAY WITH M-PESA';
+  btn.disabled = false;
 }
 
 function showStkFallback(orderId, total, reason) {
@@ -892,46 +938,75 @@ function startPolling(orderId) {
   }, 3000);
 }
 
-function showPayFailed(orderId) {
-  document.getElementById('pay-status').innerHTML = `
-    <div style="font-size:56px;margin-bottom:16px;">❌</div>
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:var(--red);margin-bottom:8px;">PAYMENT CANCELLED</div>
-    <div style="color:var(--muted2);font-size:14px;margin-bottom:24px;">You cancelled the M-Pesa prompt. Your order is saved — try again.</div>
-    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-      <button class="btn btn-primary btn-lg" onclick="resetCheckoutForm()">Try Again</button>
-      <a href="https://wa.me/254724357210?text=Hi!%20I%20had%20trouble%20paying%20for%20order%20%23${orderId}" target="_blank" class="btn btn-lg" style="background:var(--wa);color:#fff;border:none;text-decoration:none;">💬 WhatsApp Help</a>
-    </div>`;
-}
+function showPayFailed(orderRef) {
 
-function showPayTimeout(orderId) {
-  document.getElementById('pay-status').innerHTML = `
-    <div style="font-size:56px;margin-bottom:16px;">⏱️</div>
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:var(--accent);margin-bottom:8px;">TAKING TOO LONG?</div>
-    <div style="color:var(--muted2);font-size:14px;margin-bottom:6px;">If you completed the payment, we will confirm your order shortly.</div>
-    <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent);margin-bottom:24px;letter-spacing:2px;">Order #${orderId}</div>
+  document.getElementById("pay-waiting").style.display = "none";
+
+  document.getElementById("pay-message").style.display = "block";
+
+  document.getElementById("pay-message").innerHTML = `
+    <div style="font-size:56px;margin-bottom:16px;">❌</div>
+
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:var(--red);margin-bottom:8px;">
+      PAYMENT CANCELLED
+    </div>
+
+    <div style="color:var(--muted2);font-size:14px;margin-bottom:24px;">
+      You cancelled the M-Pesa prompt.
+      Your order has been saved.
+    </div>
+
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-      <a href="https://wa.me/254724357210?text=Hi!%20I%20paid%20for%20order%20%23${orderId}%20but%20it%20is%20not%20confirmed%20yet." target="_blank" class="btn btn-lg" style="background:var(--wa);color:#fff;border:none;text-decoration:none;">💬 Contact Us</a>
-      <button class="btn btn-ghost btn-lg" onclick="go('shop')">Back to Shop</button>
-    </div>`;
+
+      <button class="btn btn-primary btn-lg"
+              onclick="resetCheckoutForm()">
+        Try Again
+      </button>
+
+      <a href="https://wa.me/254724357210?text=Hi! I had trouble paying for order ${orderRef}"
+        target="_blank"
+        class="btn btn-lg"
+        style="background:var(--wa);color:#fff;border:none;text-decoration:none;">
+
+        💬 WhatsApp Help
+
+      </a>
+
+    </div>
+  `;
+}
+function showPayTimeout(orderId) {
+  document.getElementById("pay-waiting").style.display = "none";
+  document.getElementById("pay-message").style.display = "block";
 }
 
 function resetCheckoutForm() {
+
   if (pollTimer) {
     clearInterval(pollTimer);
     pollTimer = null;
   }
 
-  const payStatus = document.getElementById('pay-status');
+  currentOrder = null;
 
-  // Restore the original waiting screen
-  payStatus.innerHTML = defaultPayStatus;
-  payStatus.style.display = 'none';
+  document.getElementById("pay-status").style.display = "none";
 
-  document.getElementById('co-form-actions').style.display = 'flex';
+  document.getElementById("pay-waiting").style.display = "block";
 
-  const btn = document.getElementById('place-btn');
+  document.getElementById("pay-message").style.display = "none";
+
+  document.getElementById("pay-message").innerHTML = "";
+
+  document.getElementById("pay-timer").textContent = "";
+
+  document.getElementById("pay-ref").textContent = "";
+
+  document.getElementById("co-form-actions").style.display = "flex";
+
+  const btn = document.getElementById("place-btn");
+
   btn.disabled = false;
-  btn.textContent = '📲 PAY WITH M-PESA';
+  btn.textContent = "📲 PAY WITH M-PESA";
 }
 function showSuccess() {
   buildReceipt(currentOrder);
