@@ -486,7 +486,7 @@ function showReceipt(orderRef) {
 function closeReceipt() { document.getElementById('receipt-modal').classList.remove('open'); }
 
 // TOAST
-let _tt;
+let _tt= null;
 function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
