@@ -527,7 +527,8 @@ window.addEventListener('load', async () => {
   await loadProducts();
   await loadStats();
   // PWA
-  initPWA();
+function name(params) {
+} initPWA();
   // PIN input enter key
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeReceipt(); });
 });
@@ -693,7 +694,8 @@ function addToCart(id) {
   if (sizes.length > 1 && !size) { toast('⚠ Select a size first'); return; }
   for (let i = 0; i < qty; i++) cart.push({ id, size: size || p.sizes || '' });
   updateCartCount();
-  toast(`✅ ${qty}× ${p.name}${size ? ' (' + size + ')' : ''} added`);
+  const toastMsg = `✅ ${qty}× ${p.name}${size ? ' (' + size + ')' : ''} added`;
+  toast(toastMsg);
   const btn = document.getElementById('add-' + id);
   if (btn) { btn.textContent = '✓ Added'; btn.classList.add('done'); setTimeout(() => { btn.textContent = '+Add'; btn.classList.remove('done'); }, 1400); }
   if (qtyEl) qtyEl.value = 1;
