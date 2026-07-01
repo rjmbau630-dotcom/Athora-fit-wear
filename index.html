@@ -806,14 +806,14 @@ async function placeOrder() {
     // Show waiting screen
     document.getElementById('co-form-actions').style.display = 'none';
     document.getElementById('pay-status').style.display = 'block';
-    document.getElementById('pay-ref').textContent = 'Order #' + data.order_id;
+    document.getElementById('pay-ref').textContent = 'Order ' + data.order_ref;
     toast('📲 M-Pesa PIN prompt sent! Check your phone.');
 
-    localStorage.setItem('lastOrderId', data.order_id);
+    localStorage.setItem('lastOrderId', data.order_ref);
 
     // Build order object for receipt
     currentOrder = {
-      id: data.order_id, total: data.total, name, phone, addr, mpesa: '',
+      id: data.order_ref, total: data.total, name, phone, addr, mpesa: '',
       items: cart.map(item => {
         const p = products.find(x => x.id === item.id);
         return { name: p?.name, price: p?.price, size: item.size, category: p?.category };
@@ -826,7 +826,7 @@ async function placeOrder() {
       startPolling(data.order_ref);
     } else {
       // STK failed — show manual payment fallback
-      showStkFallback(data.order_id, data.total, data.stk_error);
+      showStkFallback(data.order_ref, data.total, data.stk_error);
     }
   } else {
     toast('❌ ' + (error || data?.error || 'Failed to place order'));
