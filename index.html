@@ -344,21 +344,24 @@ padding:10px 16px;
 </style>
 
 <script>
-const navbar=document.querySelector("nav");
+window.addEventListener("DOMContentLoaded", () => {
 
-window.addEventListener("scroll",()=>{
+    const navbar = document.querySelector("nav");
 
-if(window.scrollY>30){
+    if (!navbar) return;
 
-navbar.classList.add("scrolled");
+    window.addEventListener("scroll", () => {
 
-}else{
+        if (window.scrollY > 30) {
+            navbar.classList.add("scrolled");
+        } else {
+            navbar.classList.remove("scrolled");
+        }
 
-navbar.classList.remove("scrolled");
-
-}
+    });
 
 });
+
 </script>
 /* =========================
 THEME SWITCH
