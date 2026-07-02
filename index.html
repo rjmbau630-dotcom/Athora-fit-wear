@@ -1142,7 +1142,50 @@ textarea{
     animation:zoomIn .6s ease both;
 
 }
+</style>
 
+<nav>
+
+    <div class="nav-logo" onclick="go('home')">
+        <img src="YOUR_LOGO_FILE_HERE" alt="Athora Fit Wear">
+    </div>
+
+    <div class="nav-links">
+
+        <button class="nav-link on" onclick="go('home')">
+            HOME
+        </button>
+
+        <button class="nav-link" onclick="go('shop')">
+            SHOP
+        </button>
+
+        <button class="nav-link" onclick="go('track')">
+            TRACK ORDER
+        </button>
+
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;">
+
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span class="theme-icon">🌙</span>
+        </button>
+
+        <button class="cart-btn" onclick="go('cart')">
+
+            CART
+
+            <span class="cart-count" id="cart-count">
+                0
+            </span>
+
+        </button>
+
+    </div>
+
+</nav>
+<style>
 .success-wrap{text-align:center;padding:100px 20px;}
 .success-ico{font-size:80px;margin-bottom:20px;animation:pop .4s cubic-bezier(.34,1.56,.64,1);}
 @keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
