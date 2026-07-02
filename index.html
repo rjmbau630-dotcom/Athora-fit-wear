@@ -13,16 +13,42 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#000000;--bg2:#000000;--bg3:#181818;--bg4:#000000;
-  --border:#1e1e1e;--border2:#2a2a2a;
-  --text:#f0ede8;--muted:#555;--muted2:#999;
-  --accent:#e8ff00;--red:#ff3030;--green:#00ff88;--wa:#1ac70b;
-  --accent-glow:rgba(202, 220, 3, 0.897);
-}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;overflow-x:hidden;}
+  :root{
 
+  /* ===== BRAND ===== */
+
+  --gold:#D4AF37;
+  --gold-light:#F7D76A;
+  --gold-dark:#A67C00;
+
+  /* ===== DARK THEME ===== */
+
+  --bg:#070707;
+  --bg2:#111111;
+  --bg3:#1A1A1A;
+
+  --card:#181818;
+
+  --text:#FFFFFF;
+  --muted:#AFAFAF;
+
+  --border:rgba(212,175,55,.15);
+
+  /* ===== SHADOWS ===== */
+
+  --shadow-sm:0 8px 20px rgba(0,0,0,.25);
+  --shadow:0 15px 40px rgba(0,0,0,.45);
+  --shadow-lg:0 30px 70px rgba(0,0,0,.65);
+
+  /* ===== RADIUS ===== */
+
+  --radius:18px;
+  --radius-lg:26px;
+
+  /* ===== TRANSITIONS ===== */
+
+  --speed:.35s;
+}
 /* ── LOADER ── */
 #loader{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .7s,visibility .7s;}
 #loader.out{opacity:0;visibility:hidden;}
@@ -91,15 +117,54 @@ nav{position:sticky;top:0;z-index:200;background:rgba(10,10,10,.95);backdrop-fil
 .cat-btn.on{background:var(--accent);color:#000;border-color:var(--accent);}
 
 /* ── PRODUCT GRID ── */
-.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:2px;}
-.prod-card{background:var(--bg2);position:relative;display:flex;flex-direction:column;transition:all .2s;border:1px solid var(--border);}
-.prod-card:hover{border-color:rgba(232,255,0,.3);z-index:2;transform:scale(1.01);}
+.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:2px;}.prod-.card{
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+    border-radius:var(--radius);
+
+    box-shadow:var(--shadow);
+
+    transition:.35s;
+
+}
+.prod-card:hover{
+
+    transform:translateY(-8px);
+
+    border-color:var(--gold);
+
+    box-shadow:
+
+    0 20px 60px rgba(212,175,55,.18);
+
+}
 .prod-card.oos{opacity:.5;}
 .oos-tag{position:absolute;top:12px;right:12px;background:var(--red);color:#fff;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:3px 8px;z-index:2;}
 .prod-img{width:100%;aspect-ratio:3/4;object-fit:cover;background:var(--bg3);display:block;}
 .prod-ph{width:100%;aspect-ratio:3/4;background:linear-gradient(135deg,var(--bg3) 0%,var(--bg4) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--border2);}
 .prod-ph svg{width:48px;height:48px;opacity:.3;}
-.prod-body{padding:16px;flex:1;display:flex;flex-direction:column;}
+.prod-body{
+
+    background:
+
+    radial-gradient(circle at top,#181818 0%,#070707 60%);
+
+    color:var(--text);
+
+    font-family:'Poppins',sans-serif;
+
+    overflow-x:hidden;
+
+    transition:
+
+    background .35s,
+
+    color .35s;
+
+}
 .prod-cat{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:4px;}
 .prod-name{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.5px;margin-bottom:4px;line-height:1.1;}
 .prod-desc{color:var(--muted2);font-size:12px;flex:1;margin-bottom:12px;line-height:1.5;}
@@ -148,7 +213,15 @@ nav{position:sticky;top:0;z-index:200;background:rgba(10,10,10,.95);backdrop-fil
 .co-panel h3{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;margin-bottom:24px;color:var(--muted2);}
 .field{margin-bottom:18px;}
 .field label{display:block;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
-.field input,.field select,.field textarea{width:100%;padding:13px 16px;background:var(--bg3);color:var(--text);border:1px solid var(--border2);font-family:'Barlow',sans-serif;font-size:15px;outline:none;transition:border-color .15s;appearance:none;resize:none;border-radius:0;}
+.field input:focus{
+
+    border-color:var(--gold);
+
+    box-shadow:
+
+    0 0 15px rgba(212,175,55,.3);
+
+}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
 .field input::placeholder,.field textarea::placeholder{color:var(--muted);}
 .mpesa-block{background:rgba(232,255,0,.05);border:1px solid rgba(232,255,0,.15);padding:20px;margin-bottom:18px;}
@@ -167,13 +240,47 @@ nav{position:sticky;top:0;z-index:200;background:rgba(10,10,10,.95);backdrop-fil
 
 /* ── BUTTONS ── */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 24px;font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border:none;cursor:pointer;transition:all .15s;text-transform:uppercase;letter-spacing:1px;border-radius:0;}
-.btn-primary{background:var(--accent);color:#000;}.btn-primary:hover{background:#fff;}
+.btn-primary{
+
+    background:
+
+    linear-gradient(
+
+    135deg,
+
+    var(--gold),
+
+    var(--gold-light)
+
+    );
+
+    color:black;
+
+    border:none;
+
+    font-weight:700;
+
+    border-radius:50px;
+
+    transition:.3s;
+
+}
 .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border2);}.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
 .btn-danger{background:rgba(255,48,48,.1);color:var(--red);border:1px solid rgba(255,48,48,.2);}.btn-danger:hover{background:var(--red);color:#fff;}
 .btn-lg{padding:16px 36px;font-size:15px;}
 .btn-full{width:100%;}
 .btn-row{display:flex;gap:10px;flex-wrap:wrap;}
+.btn-primary:hover{
 
+    transform:
+
+    translateY(-3px);
+
+    box-shadow:
+
+    0 10px 30px rgba(212,175,55,.35);
+
+}
 /* ── SUCCESS ── */
 .success-wrap{text-align:center;padding:100px 20px;}
 .success-ico{font-size:80px;margin-bottom:20px;animation:pop .4s cubic-bezier(.34,1.56,.64,1);}
