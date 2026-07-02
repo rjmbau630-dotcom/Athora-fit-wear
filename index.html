@@ -611,7 +611,6 @@ async function loadStats() {
   const { ok, data } = await api('/api/stats');
   if (ok) {
     document.getElementById('stat-products').textContent = data.products || 0;
-    document.getElementById('stat-orders').textContent = data.orders || 0;
   }
 }
 
