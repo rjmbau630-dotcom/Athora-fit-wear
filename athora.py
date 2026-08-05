@@ -11,16 +11,16 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("athora")
 
 # ── CONFIG ───────────────────────────────────────────────
-ADMIN_PIN             = "Ryan mkuu"
-FLASK_SECRET          = "athora-secret-2025-x9k"
+ADMIN_PIN = os.environ.get("ADMIN_PIN")
+FLASK_SECRET = os.environ.get("FLASK_SECRET")
 DATABASE_URL          = os.environ.get("DATABASE_URL", "")
 
 # M-Pesa Daraja
 MPESA_ENV             = os.environ.get("MPESA_ENV", "sandbox")
-MPESA_CONSUMER_KEY    = os.environ.get("MPESA_CONSUMER_KEY",    "o3tR4XeP2aAOPt1iSmscqfsHMeu9BlZZUSSv7RLUO5D5LNbE")
-MPESA_CONSUMER_SECRET = os.environ.get("MPESA_CONSUMER_SECRET", "99ZuLyVjhD8ecHFAj4JftWKnJs3iCAjEZdY4mKSYs57OnxAO0FzGmO0gH9DRGvRL")
-MPESA_SHORTCODE       = os.environ.get("MPESA_SHORTCODE",       "174379")
-MPESA_PASSKEY         = os.environ.get("MPESA_PASSKEY",         "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919")
+MPESA_CONSUMER_KEY = os.environ.get("MPESA_CONSUMER_KEY")
+MPESA_CONSUMER_SECRET = os.environ.get("MPESA_CONSUMER_SECRET")
+MPESA_PASSKEY = os.environ.get("MPESA_PASSKEY")
+MPESA_SHORTCODE       = os.environ.get("MPESA_SHORTCODE",       "4327609")
 MPESA_CALLBACK_URL    = os.environ.get("MPESA_CALLBACK_URL",    "https://athora-fit-wear.onrender.com/mpesa/callback")
 MPESA_BASE            = "https://api.safaricom.co.ke" if MPESA_ENV == "production" else "https://sandbox.safaricom.co.ke"
 
