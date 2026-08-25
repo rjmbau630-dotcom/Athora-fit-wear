@@ -1,0 +1,14 @@
+{
+  "name": "Athora Fit Wear",
+  "short_name": "Athora",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#0b0b0b",
+  "background_color": "#0b0b0b",
+  "display": "standalone"
+}
