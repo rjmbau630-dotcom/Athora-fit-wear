@@ -4,7 +4,7 @@ Flask + PostgreSQL + Order Tracking
 """
 import os, json, secrets, base64, logging
 from datetime import datetime
-from flask import Flask, request, session, jsonify, Response
+from flask import Flask, request, session, jsonify, Response, send_from_directory
 import requests as http
 
 logging.basicConfig(level=logging.INFO)
@@ -430,6 +430,36 @@ def index():
 def admin_page():
     f = os.path.join(BASE, "admin.html")
     return Response(open(f).read(), mimetype="text/html") if os.path.exists(f) else ("admin.html not found", 404)
+
+# ── FAVICON / PWA ASSETS ─────────────────────────────────
+# Served explicitly (no static/ folder in this project, and no
+# catch-all route — each file gets its own exact route so this
+# can never shadow /api/... or any other existing endpoint) so
+# browsers and the manifest can actually resolve the Athora
+# A+swoosh icon instead of 404ing on the old /static/... paths.
+def _serve_root_asset(fname):
+    return send_from_directory(BASE, fname, max_age=86400) if os.path.exists(os.path.join(BASE, fname)) else ("Not found", 404)
+
+@app.route("/favicon.ico")
+def favicon_ico(): return _serve_root_asset("favicon.ico")
+
+@app.route("/favicon-16x16.png")
+def favicon_16(): return _serve_root_asset("favicon-16x16.png")
+
+@app.route("/favicon-32x32.png")
+def favicon_32(): return _serve_root_asset("favicon-32x32.png")
+
+@app.route("/apple-touch-icon.png")
+def apple_touch_icon(): return _serve_root_asset("apple-touch-icon.png")
+
+@app.route("/android-chrome-192x192.png")
+def android_chrome_192(): return _serve_root_asset("android-chrome-192x192.png")
+
+@app.route("/android-chrome-512x512.png")
+def android_chrome_512(): return _serve_root_asset("android-chrome-512x512.png")
+
+@app.route("/site.webmanifest")
+def site_webmanifest(): return _serve_root_asset("site.webmanifest")
 
 # ── STARTUP ──────────────────────────────────────────────
 if DATABASE_URL:
