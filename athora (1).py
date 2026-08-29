@@ -22,7 +22,7 @@ MPESA_CONSUMER_SECRET = os.environ.get("MPESA_CONSUMER_SECRET")
 MPESA_PASSKEY = os.environ.get("MPESA_PASSKEY")
 MPESA_SHORTCODE       = os.environ.get("MPESA_SHORTCODE",       "4327609")
 MPESA_CALLBACK_URL    = os.environ.get("MPESA_CALLBACK_URL",    "https://athora-fit-wear.onrender.com/mpesa/callback")
-MPESA_BASE = "https://api.safaricom.co.ke" if MPESA_ENV == "production" else "https://sandbox.safaricom.co.ke"
+MPESA_BASE = "https://api.safaricom.co.ke" if MPESA_ENV == "production" else "https://production.safaricom.co.ke"
 
 # Supabase — for realtime notifications
 SUPABASE_URL          = os.environ.get("SUPABASE_URL",      "")
