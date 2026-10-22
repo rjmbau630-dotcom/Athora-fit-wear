@@ -374,6 +374,76 @@ nav{height:64px;padding:0 28px;backdrop-filter:blur(26px) saturate(160%);-webkit
 @media(prefers-reduced-motion:reduce){
   .prod-card,.btn-hero,.btn,.add-btn,.nav-link,.cart-btn,.wa-btn,.qty-btn{transition:none!important;}
 }
+/* ── PRODUCT DETAILS + IMAGE VIEWER ── */
+body.pd-lock{overflow:hidden;}
+/* while a modal is open, keep the layout viewport at screen width (site nav is slightly wider than small phones) */
+html.pd-lock{overflow-x:hidden;}
+.prod-img[data-pd],.prod-ph[data-pd],.prod-name[data-pd]{cursor:pointer;}
+.prod-name[data-pd]:hover{color:var(--accent);}
+.pd-link{align-self:flex-start;background:none;border:none;border-bottom:1px solid var(--border);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 0;margin-bottom:12px;cursor:pointer;transition:border-color .2s,color .2s;}
+.pd-link:hover,.pd-link:focus-visible{color:var(--accent-light);border-color:var(--accent-light);}
+.pd-wrap{display:none;position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);align-items:center;justify-content:center;padding:20px;overscroll-behavior:contain;}
+.pd-wrap.open{display:flex;}
+.pd-panel{position:relative;background:var(--bg2);border:1px solid var(--border);border-radius:22px;width:100%;max-width:980px;max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow-y:auto;overscroll-behavior:contain;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);box-shadow:var(--shadow-lux);}
+.pd-close{position:absolute;top:12px;right:12px;z-index:5;width:40px;height:40px;border-radius:50%;border:1px solid var(--border2);background:rgba(5,5,5,.75);color:var(--text);font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.pd-close:hover,.pd-close:focus-visible{border-color:var(--accent);color:var(--accent);}
+.pd-gallery{padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0;}
+.pd-main{position:relative;width:100%;aspect-ratio:3/4;background:var(--bg3);border-radius:16px;overflow:hidden;border:none;padding:0;cursor:zoom-in;display:block;}
+.pd-main img{width:100%;height:100%;object-fit:contain;display:block;}
+.pd-main .pd-zoom-hint{position:absolute;left:10px;bottom:10px;background:rgba(5,5,5,.75);color:var(--muted2);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;padding:5px 10px;border-radius:980px;pointer-events:none;}
+.pd-main .prod-ph{height:100%;aspect-ratio:auto;border-radius:0;}
+.pd-thumbs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;}
+.pd-thumb{flex:0 0 64px;width:64px;height:80px;border-radius:10px;overflow:hidden;border:2px solid var(--border2);background:var(--bg3);padding:0;cursor:pointer;opacity:.7;transition:opacity .2s,border-color .2s;}
+.pd-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.pd-thumb:hover{opacity:1;}
+.pd-thumb.on{border-color:var(--accent);opacity:1;}
+.pd-info{padding:28px 28px 28px 12px;display:flex;flex-direction:column;min-width:0;}
+.pd-cat{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:6px;padding-right:44px;}
+.pd-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,4vw,44px);letter-spacing:.5px;line-height:1.05;margin-bottom:10px;overflow-wrap:anywhere;}
+.pd-price{font-family:'Share Tech Mono',monospace;font-size:24px;color:var(--accent);margin-bottom:10px;}
+.pd-price small{font-size:11px;color:var(--muted);letter-spacing:1px;margin-right:6px;}
+.pd-stock{display:inline-block;align-self:flex-start;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:4px 10px;border-radius:980px;border:1px solid currentColor;margin-bottom:16px;}
+.pd-stock.in{color:var(--green);}
+.pd-stock.out{color:var(--red);}
+.pd-desc{color:var(--muted2);font-size:14px;line-height:1.7;white-space:pre-line;margin-bottom:18px;overflow-wrap:anywhere;}
+.pd-lbl{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.pd-sizes{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+.pd-sizes .sz{font-size:12px;padding:8px 14px;min-width:44px;min-height:40px;}
+.pd-one-size{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted2);letter-spacing:1px;margin-bottom:18px;}
+.pd-buy{margin-top:auto;display:flex;flex-direction:column;gap:12px;}
+.pd-qty-row{display:flex;align-items:center;gap:12px;}
+.pd-qty-row .qty-btn{width:36px;height:36px;font-size:18px;}
+.pd-qty-row .qty-num{width:40px;height:36px;font-size:15px;}
+.pd-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.pd-actions .btn{flex:1 1 150px;justify-content:center;min-height:46px;cursor:pointer;}
+.pd-actions .btn:disabled{opacity:.4;pointer-events:none;}
+.pd-err{color:var(--red);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;min-height:16px;}
+.pd-wrap a:focus-visible,.pd-wrap button:focus-visible,.zv-wrap button:focus-visible{outline:2px solid var(--accent-light);outline-offset:2px;}
+
+.zv-wrap{display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.96);}
+.zv-wrap.open{display:block;}
+.zv-stage{position:absolute;inset:0;overflow:hidden;touch-action:none;display:flex;align-items:center;justify-content:center;cursor:zoom-in;user-select:none;-webkit-user-select:none;}
+.zv-stage.zoomed{cursor:grab;}
+.zv-stage.drag{cursor:grabbing;}
+.zv-img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;transform-origin:center center;will-change:transform;-webkit-user-drag:none;pointer-events:none;}
+.zv-bar{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px;z-index:3;pointer-events:none;}
+.zv-bar>*{pointer-events:auto;}
+.zv-tools{display:flex;gap:8px;}
+.zv-btn{min-width:44px;height:44px;border-radius:980px;border:1px solid var(--border2);background:rgba(20,20,18,.8);color:var(--text);font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 12px;font-family:'Share Tech Mono',monospace;}
+.zv-btn:hover{border-color:var(--accent);color:var(--accent);}
+.zv-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:3;}
+.zv-prev{left:12px;}
+.zv-next{right:12px;}
+.zv-count{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:3;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--muted2);background:rgba(20,20,18,.8);padding:5px 12px;border-radius:980px;}
+
+@media(max-width:760px){
+  .pd-wrap{padding:0;align-items:stretch;}
+  .pd-panel{grid-template-columns:minmax(0,1fr);border-radius:0;border:none;max-height:100vh;max-height:100dvh;}
+  .pd-info{padding:4px 18px 24px;}
+  .pd-gallery{padding:12px 12px 0;}
+  .pd-close{position:fixed;top:10px;right:10px;}
+}
+@media(prefers-reduced-motion:reduce){.pd-link,.pd-thumb{transition:none!important;}}
 </style>
 </head>
 <body>
@@ -612,6 +682,56 @@ nav{height:64px;padding:0 28px;backdrop-filter:blur(26px) saturate(160%);-webkit
   </div>
 </div>
 
+<!-- PRODUCT DETAILS -->
+<div class="pd-wrap" id="pd-modal" aria-hidden="true">
+  <div class="pd-panel" role="dialog" aria-modal="true" aria-labelledby="pd-title" tabindex="-1">
+    <button class="pd-close" type="button" id="pd-close" aria-label="Close product details" onclick="closeProduct()">&#10005;</button>
+    <div class="pd-gallery">
+      <button class="pd-main" type="button" id="pd-main" aria-label="Open larger image" onclick="openViewer()"></button>
+      <div class="pd-thumbs" id="pd-thumbs" role="group" aria-label="Product photos"></div>
+    </div>
+    <div class="pd-info">
+      <div class="pd-cat" id="pd-cat"></div>
+      <h2 class="pd-title" id="pd-title"></h2>
+      <div class="pd-price" id="pd-price"></div>
+      <div class="pd-stock" id="pd-stock"></div>
+      <div class="pd-desc" id="pd-desc"></div>
+      <div id="pd-size-wrap"></div>
+      <div class="pd-buy">
+        <div class="pd-qty-row">
+          <span class="pd-lbl" style="margin:0;">Qty</span>
+          <div class="qty-ctrl">
+            <button class="qty-btn" type="button" aria-label="Decrease quantity" onclick="pdQty(-1)">&minus;</button>
+            <input class="qty-num" id="pd-qty" value="1" readonly aria-label="Quantity">
+            <button class="qty-btn" type="button" aria-label="Increase quantity" onclick="pdQty(1)">+</button>
+          </div>
+        </div>
+        <div class="pd-err" id="pd-err" role="alert"></div>
+        <div class="pd-actions">
+          <button class="btn btn-ghost" type="button" id="pd-add" onclick="pdAdd(false)">Add to Cart</button>
+          <button class="btn btn-primary" type="button" id="pd-buy" onclick="pdAdd(true)">Buy Now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- IMAGE VIEWER -->
+<div class="zv-wrap" id="zv" role="dialog" aria-modal="true" aria-label="Product image viewer" aria-hidden="true">
+  <div class="zv-stage" id="zv-stage"><img class="zv-img" id="zv-img" alt="" draggable="false"></div>
+  <div class="zv-bar">
+    <div class="zv-tools">
+      <button class="zv-btn" type="button" id="zv-out" aria-label="Zoom out">&minus;</button>
+      <button class="zv-btn" type="button" id="zv-reset" aria-label="Reset zoom">1&times;</button>
+      <button class="zv-btn" type="button" id="zv-in" aria-label="Zoom in">+</button>
+    </div>
+    <button class="zv-btn" type="button" id="zv-close" aria-label="Close image viewer">&#10005;</button>
+  </div>
+  <button class="zv-btn zv-nav zv-prev" type="button" id="zv-prev" aria-label="Previous photo" hidden>&#8249;</button>
+  <button class="zv-btn zv-nav zv-next" type="button" id="zv-next" aria-label="Next photo" hidden>&#8250;</button>
+  <div class="zv-count" id="zv-count" hidden></div>
+</div>
+
 <!-- WHATSAPP -->
 <a href="https://wa.me/254724357210?text=Hi%20Athora%20Fit%20Wear!" target="_blank" class="wa-btn">
   <span class="wa-tip">Chat with us</span>
@@ -656,6 +776,7 @@ window.addEventListener('load', async () => {
   drawBackground();
   // Load data
   await loadProducts();
+  openProductFromHash();
   await loadStats();
   // PWA
 function initPWA() {
@@ -778,11 +899,12 @@ function renderShop() {
     const ph = `<div class="prod-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.86H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.86l.58-3.57a2 2 0 00-1.34-2.23z"/></svg></div>`;
     return `<div class="prod-card${p.outOfStock ? ' oos' : ''}">
       ${p.outOfStock ? '<div class="oos-tag">OUT OF STOCK</div>' : ''}
-      ${p.image_b64 ? `<img class="prod-img" src="${p.image_b64}" alt="${p.name}" loading="lazy">` : ph}
+      ${p.image_b64 ? `<img class="prod-img" src="${p.image_b64}" alt="${esc(p.name)} — view details" loading="lazy" data-pd="${p.id}">` : ph.replace('class="prod-ph"', `class="prod-ph" data-pd="${p.id}"`)}
       <div class="prod-body">
         <div class="prod-cat">${p.category}</div>
-        <div class="prod-name">${p.name}</div>
+        <div class="prod-name" data-pd="${p.id}">${p.name}</div>
         <div class="prod-desc">${p.description || 'Premium gym wear for peak performance.'}</div>
+        <button type="button" class="pd-link" data-pd="${p.id}" aria-label="View details for ${esc(p.name)}">View Details →</button>
         ${szHtml}
         <div class="prod-footer">
           <div class="prod-price-wrap">
@@ -816,6 +938,17 @@ function changeQty(pid, d) {
   el.value = v;
 }
 
+// Shared by product cards and the details view. Returns false (and adds nothing) if blocked.
+function cartAdd(id, size, qty) {
+  const p = products.find(x => x.id === id);
+  if (!p || p.outOfStock) return false;
+  const sizes = (p.sizes || '').split(',').map(s => s.trim()).filter(Boolean);
+  if (sizes.length > 1 && !size) { toast('⚠ Select a size first'); return false; }
+  for (let i = 0; i < qty; i++) cart.push({ id, size: size || p.sizes || '' });
+  updateCartCount();
+  return true;
+}
+
 function addToCart(id) {
   const p = products.find(x => x.id === id);
   if (!p || p.outOfStock) return;
@@ -824,15 +957,278 @@ function addToCart(id) {
   const card = document.querySelector(`#add-${id}`)?.closest('.prod-card');
   const sizeEl = card?.querySelector('.sz.on');
   const size = sizeEl ? sizeEl.textContent : '';
-  const sizes = (p.sizes || '').split(',').map(s => s.trim()).filter(Boolean);
-  if (sizes.length > 1 && !size) { toast('⚠ Select a size first'); return; }
-  for (let i = 0; i < qty; i++) cart.push({ id, size: size || p.sizes || '' });
-  updateCartCount();
+  if (!cartAdd(id, size, qty)) return;
   const toastMsg = `✅ ${qty}× ${p.name}${size ? ' (' + size + ')' : ''} added`;
   const btn = document.getElementById('add-' + id);
   if (btn) { btn.textContent = '✓ Added'; btn.classList.add('done'); setTimeout(() => { btn.textContent = '+Add'; btn.classList.remove('done'); }, 1400); }
   if (qtyEl) qtyEl.value = 1;
 }
+
+// ══════════════════════════════════════
+//  PRODUCT DETAILS + IMAGE VIEWER
+// ══════════════════════════════════════
+const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// All photos for a product. images_json (optional, new) first-class; image_b64 stays the primary/fallback.
+function getImages(p) {
+  let extra = p.images_json;
+  if (typeof extra === 'string') { try { extra = JSON.parse(extra); } catch (e) { extra = []; } }
+  if (!Array.isArray(extra)) extra = [];
+  const out = [];
+  [p.image_b64, ...extra].forEach(i => { if (typeof i === 'string' && i && !out.includes(i)) out.push(i); });
+  return out;
+}
+
+let pdProduct = null, pdImages = [], pdIdx = 0, pdSize = '', pdPushed = false, pdReturnFocus = null;
+const PD_PH = '<div class="prod-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.86H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.86l.58-3.57a2 2 0 00-1.34-2.23z"/></svg></div>';
+
+function lockScroll(on) {
+  const anyOpen = document.getElementById('pd-modal').classList.contains('open') || document.getElementById('zv').classList.contains('open');
+  document.body.classList.toggle('pd-lock', on || anyOpen);
+  document.documentElement.classList.toggle('pd-lock', on || anyOpen);
+}
+
+function openProduct(id, fromHash) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  pdProduct = p; pdImages = getImages(p); pdIdx = 0; pdSize = '';
+  const sizes = (p.sizes || '').split(',').map(s => s.trim()).filter(Boolean);
+  document.getElementById('pd-cat').textContent = p.category || '';
+  document.getElementById('pd-title').textContent = p.name;
+  document.getElementById('pd-price').innerHTML = '<small>KSh</small>' + fmt(p.price);
+  const st = document.getElementById('pd-stock');
+  st.className = 'pd-stock ' + (p.outOfStock ? 'out' : 'in');
+  st.textContent = p.outOfStock ? 'Out of stock' : 'In stock';
+  document.getElementById('pd-desc').textContent = p.description || 'Premium gym wear for peak performance.';
+  document.getElementById('pd-size-wrap').innerHTML = sizes.length > 1
+    ? `<div class="pd-lbl" id="pd-size-lbl">Select size</div><div class="pd-sizes" role="group" aria-labelledby="pd-size-lbl">${sizes.map(s => `<button type="button" class="sz" aria-pressed="false" data-size="${esc(s)}">${esc(s)}</button>`).join('')}</div>`
+    : `<div class="pd-lbl">Size</div><div class="pd-one-size">${esc(p.sizes || 'One Size')}</div>`;
+  document.getElementById('pd-qty').value = 1;
+  document.getElementById('pd-err').textContent = '';
+  ['pd-add', 'pd-buy'].forEach(b => { document.getElementById(b).disabled = !!p.outOfStock; });
+  document.getElementById('pd-add').textContent = p.outOfStock ? 'Out of Stock' : 'Add to Cart';
+  pdRenderGallery();
+  const m = document.getElementById('pd-modal');
+  if (!m.classList.contains('open')) pdReturnFocus = document.activeElement;
+  m.classList.add('open'); m.setAttribute('aria-hidden', 'false');
+  m.querySelector('.pd-panel').scrollTop = 0;
+  lockScroll(true);
+  if (!fromHash && !pdPushed) { try { history.pushState({ pd: id }, '', '#product-' + id); pdPushed = true; } catch (e) {} }
+  document.getElementById('pd-close').focus();
+}
+
+function pdRenderGallery() {
+  const p = pdProduct, main = document.getElementById('pd-main'), th = document.getElementById('pd-thumbs');
+  const src = pdImages[pdIdx];
+  main.innerHTML = src
+    ? `<img src="${esc(src)}" alt="${esc(p.name)}${pdImages.length > 1 ? ' — photo ' + (pdIdx + 1) + ' of ' + pdImages.length : ''}"><span class="pd-zoom-hint">TAP TO ZOOM</span>`
+    : PD_PH;
+  main.disabled = !src;
+  main.style.cursor = src ? '' : 'default';
+  main.setAttribute('aria-label', src ? 'Open larger image of ' + p.name : 'No image available');
+  th.style.display = pdImages.length > 1 ? 'flex' : 'none';
+  th.innerHTML = pdImages.length > 1 ? pdImages.map((s, i) =>
+    `<button type="button" class="pd-thumb${i === pdIdx ? ' on' : ''}" data-i="${i}" aria-label="Show photo ${i + 1} of ${pdImages.length}" aria-current="${i === pdIdx}"><img src="${esc(s)}" alt="" loading="lazy"></button>`).join('') : '';
+}
+
+function hidePD() {
+  const m = document.getElementById('pd-modal');
+  if (!m.classList.contains('open')) return;
+  closeViewer();
+  m.classList.remove('open'); m.setAttribute('aria-hidden', 'true');
+  lockScroll(false);
+  pdProduct = null; pdPushed = false;
+  if (/^#product-/.test(location.hash)) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+  if (pdReturnFocus && pdReturnFocus.focus && document.contains(pdReturnFocus)) pdReturnFocus.focus();
+  pdReturnFocus = null;
+}
+function closeProduct() {
+  if (pdPushed) { pdPushed = false; history.back(); } // popstate handler hides the modal
+  else hidePD();
+}
+function openProductFromHash() {
+  const m = /^#product-(\d+)$/.exec(location.hash);
+  if (m) openProduct(parseInt(m[1], 10), true);
+}
+window.addEventListener('popstate', () => {
+  if (/^#product-\d+$/.test(location.hash)) openProductFromHash(); else hidePD();
+});
+
+function pdQty(d) {
+  const el = document.getElementById('pd-qty');
+  let v = (parseInt(el.value) || 1) + d;
+  if (v < 1) v = 1; if (v > 10) v = 10;
+  el.value = v;
+}
+
+// Add / Buy Now from the details view — goes through the same cartAdd() as the product cards.
+function pdAdd(buyNow) {
+  const p = pdProduct; if (!p) return;
+  const err = document.getElementById('pd-err'); err.textContent = '';
+  const qty = parseInt(document.getElementById('pd-qty').value) || 1;
+  const res = cartAdd(p.id, pdSize, qty);
+  if (!res) { err.textContent = p.outOfStock ? 'This item is out of stock.' : '⚠ Select a size first'; return; }
+  if (buyNow) { hidePDAndGo(); return; }
+  toast(`✅ ${qty}× ${p.name}${pdSize ? ' (' + pdSize + ')' : ''} added`);
+  const b = document.getElementById('pd-add');
+  b.textContent = '✓ Added';
+  setTimeout(() => { if (pdProduct === p) b.textContent = 'Add to Cart'; }, 1400);
+  document.getElementById('pd-qty').value = 1;
+}
+function hidePDAndGo() {
+  if (pdPushed) { pdPushed = false; history.back(); setTimeout(() => { hidePD(); go('checkout'); }, 60); }
+  else { hidePD(); go('checkout'); }
+}
+
+// Delegated clicks: product cards (image / name / View Details), size + thumbnail buttons, backdrop
+document.addEventListener('click', e => {
+  const t = e.target;
+  const pdEl = t.closest && t.closest('[data-pd]');
+  if (pdEl) { openProduct(parseInt(pdEl.getAttribute('data-pd'), 10)); return; }
+  const sz = t.closest && t.closest('#pd-size-wrap .sz');
+  if (sz) {
+    pdSize = sz.getAttribute('data-size');
+    document.querySelectorAll('#pd-size-wrap .sz').forEach(b => { const on = b === sz; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+    document.getElementById('pd-err').textContent = '';
+    return;
+  }
+  const th = t.closest && t.closest('.pd-thumb');
+  if (th) { pdIdx = parseInt(th.getAttribute('data-i'), 10); pdRenderGallery(); return; }
+  if (t.id === 'pd-modal') closeProduct();
+});
+document.addEventListener('keydown', e => {
+  const zvOpen = document.getElementById('zv').classList.contains('open');
+  const pdOpen = document.getElementById('pd-modal').classList.contains('open');
+  if (e.key === 'Escape') {
+    if (zvOpen) { closeViewer(); e.preventDefault(); }
+    else if (pdOpen) { closeProduct(); e.preventDefault(); }
+    return;
+  }
+  if (zvOpen) {
+    if (e.key === 'ArrowLeft') zvStep(-1);
+    else if (e.key === 'ArrowRight') zvStep(1);
+    else if (e.key === '+' || e.key === '=') zvZoom(1.4);
+    else if (e.key === '-') zvZoom(1 / 1.4);
+    else if (e.key === '0') zvResetZoom();
+    else if (e.key === 'Tab') zvTrap(e);
+    return;
+  }
+  if (pdOpen && e.key === 'Tab') {
+    const f = [...document.querySelectorAll('#pd-modal button:not([disabled])')].filter(x => x.offsetParent !== null || x === document.activeElement);
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && (document.activeElement === first || !document.getElementById('pd-modal').contains(document.activeElement))) { last.focus(); e.preventDefault(); }
+    else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+  }
+});
+
+// ── Fullscreen zoom viewer ──
+let zv = { s: 1, x: 0, y: 0 }, zvPtrs = new Map(), zvPinch = 0, zvDragged = false, zvLast = null, zvFocus = null;
+const ZV_MAX = 5;
+function zvApply() {
+  const stage = document.getElementById('zv-stage');
+  document.getElementById('zv-img').style.transform = `translate(${zv.x}px,${zv.y}px) scale(${zv.s})`;
+  stage.classList.toggle('zoomed', zv.s > 1);
+  document.getElementById('zv-reset').textContent = (Math.round(zv.s * 10) / 10) + '×';
+}
+function zvClamp() {
+  const img = document.getElementById('zv-img');
+  const maxX = Math.max(0, (img.clientWidth * zv.s - window.innerWidth) / 2);
+  const maxY = Math.max(0, (img.clientHeight * zv.s - window.innerHeight) / 2);
+  zv.x = Math.min(maxX, Math.max(-maxX, zv.x));
+  zv.y = Math.min(maxY, Math.max(-maxY, zv.y));
+  if (zv.s <= 1) { zv.x = 0; zv.y = 0; }
+}
+function zvZoom(f, cx, cy) {
+  const ns = Math.min(ZV_MAX, Math.max(1, zv.s * f));
+  if (cx != null) { // keep the point under the cursor/fingers fixed
+    const dx = cx - window.innerWidth / 2, dy = cy - window.innerHeight / 2, k = ns / zv.s;
+    zv.x = dx - (dx - zv.x) * k; zv.y = dy - (dy - zv.y) * k;
+  }
+  zv.s = ns; zvClamp(); zvApply();
+}
+function zvResetZoom() { zv = { s: 1, x: 0, y: 0 }; zvApply(); }
+function zvShow() {
+  const img = document.getElementById('zv-img');
+  img.src = pdImages[pdIdx] || '';
+  img.alt = pdProduct ? pdProduct.name + (pdImages.length > 1 ? ' — photo ' + (pdIdx + 1) + ' of ' + pdImages.length : '') : '';
+  const multi = pdImages.length > 1;
+  ['zv-prev', 'zv-next', 'zv-count'].forEach(id => { document.getElementById(id).hidden = !multi; });
+  document.getElementById('zv-count').textContent = (pdIdx + 1) + ' / ' + pdImages.length;
+  zvResetZoom();
+}
+function zvStep(d) {
+  if (pdImages.length < 2) return;
+  pdIdx = (pdIdx + d + pdImages.length) % pdImages.length;
+  zvShow(); pdRenderGallery();
+}
+function openViewer() {
+  if (!pdImages[pdIdx]) return;
+  const v = document.getElementById('zv');
+  zvFocus = document.activeElement;
+  zvShow();
+  v.classList.add('open'); v.setAttribute('aria-hidden', 'false');
+  lockScroll(true);
+  document.getElementById('zv-close').focus();
+}
+function closeViewer() {
+  const v = document.getElementById('zv');
+  if (!v.classList.contains('open')) return;
+  v.classList.remove('open'); v.setAttribute('aria-hidden', 'true');
+  document.getElementById('zv-img').removeAttribute('src');
+  zvPtrs.clear();
+  lockScroll(false);
+  if (zvFocus && zvFocus.focus && document.contains(zvFocus)) zvFocus.focus();
+  zvFocus = null;
+}
+function zvTrap(e) {
+  const f = [...document.querySelectorAll('#zv button')].filter(b => !b.hidden);
+  const first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+  else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+}
+(function () {
+  const stage = document.getElementById('zv-stage');
+  document.getElementById('zv-close').onclick = closeViewer;
+  document.getElementById('zv-in').onclick = () => zvZoom(1.5);
+  document.getElementById('zv-out').onclick = () => zvZoom(1 / 1.5);
+  document.getElementById('zv-reset').onclick = zvResetZoom;
+  document.getElementById('zv-prev').onclick = () => zvStep(-1);
+  document.getElementById('zv-next').onclick = () => zvStep(1);
+  stage.addEventListener('wheel', e => { e.preventDefault(); zvZoom(e.deltaY < 0 ? 1.15 : 1 / 1.15, e.clientX, e.clientY); }, { passive: false });
+  stage.addEventListener('pointerdown', e => {
+    stage.setPointerCapture(e.pointerId);
+    zvPtrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    zvDragged = false; zvLast = { x: e.clientX, y: e.clientY };
+    if (zvPtrs.size === 2) { const [a, b] = [...zvPtrs.values()]; zvPinch = Math.hypot(a.x - b.x, a.y - b.y); }
+  });
+  stage.addEventListener('pointermove', e => {
+    if (!zvPtrs.has(e.pointerId)) return;
+    zvPtrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (zvPtrs.size === 2) {
+      const [a, b] = [...zvPtrs.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (zvPinch) zvZoom(d / zvPinch, (a.x + b.x) / 2, (a.y + b.y) / 2);
+      zvPinch = d; zvDragged = true; return;
+    }
+    const dx = e.clientX - zvLast.x, dy = e.clientY - zvLast.y;
+    if (Math.abs(dx) + Math.abs(dy) > 3) zvDragged = true;
+    if (zv.s > 1 && zvDragged) { zv.x += dx; zv.y += dy; zvClamp(); zvApply(); stage.classList.add('drag'); }
+    zvLast = { x: e.clientX, y: e.clientY };
+  });
+  const up = e => {
+    const had = zvPtrs.delete(e.pointerId);
+    zvPinch = 0; stage.classList.remove('drag');
+    if (!had || e.type === 'pointercancel' || zvDragged || zvPtrs.size) return;
+    // plain tap/click: backdrop closes, image toggles zoom
+    const r = document.getElementById('zv-img').getBoundingClientRect();
+    const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+    if (!inside) { closeViewer(); return; }
+    if (zv.s > 1) zvResetZoom(); else zvZoom(2.5, e.clientX, e.clientY);
+  };
+  stage.addEventListener('pointerup', up);
+  stage.addEventListener('pointercancel', up);
+  window.addEventListener('resize', () => { if (document.getElementById('zv').classList.contains('open')) { zvClamp(); zvApply(); } });
+})();
 
 function updateCartCount() {
   document.getElementById('cart-count').textContent = cart.length;

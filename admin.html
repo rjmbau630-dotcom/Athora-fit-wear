@@ -301,6 +301,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
           <input type="file" accept="image/*" id="img-file" onchange="handleImg(this)">
           <div id="uz-content"><div class="uz-ico">📸</div><p>Click to upload product photo</p><p class="uz-sub">JPG · PNG · WEBP · Max 5MB</p></div>
         </div>
+        <div class="fg form-full" style="margin-bottom:14px;">
+          <label>Extra Photos (optional — shown as thumbnails on the product page)</label>
+          <input id="extra-files" type="file" accept="image/*" multiple onchange="handleExtraImgs(this)">
+          <div id="extra-prev" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
+        </div>
         <div class="form-row">
           <div class="fg"><label>Product Name</label><input id="a-name" type="text" placeholder="e.g. Pro Compression Shorts"></div>
           <div class="fg"><label>Category</label><select id="a-cat"><option>Tops</option><option>Bottoms</option><option>Footwear</option><option>Accessories</option><option>Sets</option><option>Outerwear</option></select></div>
@@ -496,6 +501,20 @@ function handleImg(input) {
   };
   r.readAsDataURL(file);
 }
+let extraImgs = [];
+function handleExtraImgs(input) {
+  extraImgs = [];
+  const files = [...input.files].slice(0, 6);
+  const prev = document.getElementById('extra-prev'); prev.innerHTML = '';
+  files.forEach(f => {
+    const r = new FileReader();
+    r.onload = e => {
+      extraImgs.push(e.target.result);
+      prev.insertAdjacentHTML('beforeend', `<img src="${e.target.result}" alt="extra photo" style="width:56px;height:70px;object-fit:cover;border-radius:6px;border:1px solid var(--border2);">`);
+    };
+    r.readAsDataURL(f);
+  });
+}
 async function addProduct() {
   const name = document.getElementById('a-name').value.trim();
   const price = parseFloat(document.getElementById('a-price').value);
@@ -508,12 +527,14 @@ async function addProduct() {
     category: document.getElementById('a-cat').value,
     description: document.getElementById('a-desc').value.trim(),
     sizes: document.getElementById('a-sizes').value.trim() || 'One Size',
-    image_b64: currentImg
+    image_b64: currentImg,
+    ...(extraImgs.length ? { images: [currentImg, ...extraImgs].filter(Boolean) } : {})
   });
   if (ok) {
     toast('✅ Product added to store!');
     ['a-name', 'a-desc', 'a-price', 'a-sizes'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('img-file').value = ''; currentImg = null;
+    document.getElementById('extra-files').value = ''; extraImgs = []; document.getElementById('extra-prev').innerHTML = '';
     document.getElementById('uz-content').innerHTML = '<div class="uz-ico">📸</div><p>Click to upload product photo</p><p class="uz-sub">JPG · PNG · WEBP · Max 5MB</p>';
     await loadProducts();
     renderOverview();

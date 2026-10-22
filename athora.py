@@ -76,6 +76,17 @@ def init_db():
         conn.commit()
     log.info("[DB] ✅ Tables ready")
 
+    # Multi-image support — backward compatible. images_json holds an optional JSON
+    # array of image strings (URLs or base64). Existing products keep using
+    # image_b64 untouched. Own connection/try so a failure can never block startup.
+    try:
+        with get_db() as conn:
+            with conn.cursor() as c:
+                c.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS images_json TEXT")
+            conn.commit()
+    except Exception as e:
+        log.warning(f"[DB] images_json column not added: {e}")
+
 def q_all(sql, p=()):
     with get_db() as conn:
         with conn.cursor() as c:
@@ -194,11 +205,22 @@ def add_product():
     if not d.get("name") or not d.get("price"):
         return jsonify({"error": "name and price required"}), 400
     try:
-        pid = q_run(
-            "INSERT INTO products(name,category,description,price,sizes,image_b64) VALUES(%s,%s,%s,%s,%s,%s) RETURNING id",
-            (d["name"].strip(), d.get("category","General"), d.get("description",""),
-             float(d["price"]), d.get("sizes","One Size"), d.get("image_b64"))
-        )
+        # Optional extra photos: "images": [<url or base64>, ...]. Omitted => old behaviour.
+        images = d.get("images")
+        images = [i for i in images if isinstance(i, str) and i] if isinstance(images, list) else []
+        if images:
+            pid = q_run(
+                "INSERT INTO products(name,category,description,price,sizes,image_b64,images_json) VALUES(%s,%s,%s,%s,%s,%s,%s) RETURNING id",
+                (d["name"].strip(), d.get("category","General"), d.get("description",""),
+                 float(d["price"]), d.get("sizes","One Size"), d.get("image_b64") or images[0],
+                 json.dumps(images))
+            )
+        else:
+            pid = q_run(
+                "INSERT INTO products(name,category,description,price,sizes,image_b64) VALUES(%s,%s,%s,%s,%s,%s) RETURNING id",
+                (d["name"].strip(), d.get("category","General"), d.get("description",""),
+                 float(d["price"]), d.get("sizes","One Size"), d.get("image_b64"))
+            )
         return jsonify({"success": True, "id": pid}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
